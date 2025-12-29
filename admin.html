@@ -1014,10 +1014,9 @@
                     <div class="user-avatar" id="user-avatar">م</div>
                     <div>
                         <div id="admin-name">المسؤول</div>
-                        <!-- أضف هذا الزر في قسم الإعدادات بعد زر إعادة التعيين -->
-<button type="button" class="btn btn-info" id="check-server-btn" style="margin-right: 10px;">
-    <i class="fas fa-server"></i> التحقق من السيرفر
-</button>
+                        <button type="button" class="btn btn-info" id="check-server-btn" style="margin-right: 10px;">
+                            <i class="fas fa-server"></i> التحقق من السيرفر
+                        </button>
                         <div id="admin-role" style="font-size: 0.85rem;">مدير النظام</div>
                     </div>
                 </div>
@@ -1296,10 +1295,9 @@
                             <button type="submit" class="btn btn-primary" id="save-settings-btn">
                                 <i class="fas fa-save"></i> حفظ الإعدادات
                             </button>
-                            <!-- أضف هذا الزر بعد زر حفظ الإعدادات في قسم الإعدادات -->
-<button type="button" class="btn btn-secondary" id="reset-settings-btn" style="margin-right: 10px;">
-    <i class="fas fa-undo"></i> إعادة تعيين
-</button>
+                            <button type="button" class="btn btn-secondary" id="reset-settings-btn" style="margin-right: 10px;">
+                                <i class="fas fa-undo"></i> إعادة تعيين
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -1445,9 +1443,6 @@
     </div>
 
     <script>
-    // API Configuration
-    const API_BASE_URL = 'http://localhost:5000/api';
-    
     // Global variables
     let currentUser = null;
     let authToken = null;
@@ -1567,6 +1562,19 @@
         document.querySelectorAll('[data-status]').forEach(tab => {
             tab.addEventListener('click', handleRequestStatusTab);
         });
+        
+        // Reset settings button
+        document.getElementById('reset-settings-btn')?.addEventListener('click', function() {
+            openDeleteModal({
+                title: 'إعادة تعيين الإعدادات',
+                itemTitle: 'إعادة تعيين جميع الإعدادات',
+                message: 'هل تريد إعادة تعيين جميع الإعدادات إلى القيم الافتراضية؟ سيتم فقدان جميع التغييرات الحالية.',
+                callback: () => resetSettings()
+            });
+        });
+        
+        // Check server button
+        document.getElementById('check-server-btn')?.addEventListener('click', checkServerConnection);
     }
     
     function initSidebarToggle() {
@@ -1887,71 +1895,64 @@
         }, 5000);
     }
     
-    // تحديث دالة apiRequest لجعلها أكثر قوة (ابحث عن الدالة الحالية واستبدلها)
-async function apiRequest(url, options = {}) {
-    const defaultOptions = {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': authToken ? `Bearer ${authToken}` : ''
-        },
-        credentials: 'same-origin' // إضافة هذا للتعامل مع الكوكيز
-    };
-    
-    const mergedOptions = { ...defaultOptions, ...options };
-    
-    try {
-        // محاولة استخدام المسار النسبي أولاً
-        const fullUrl = url.startsWith('http') ? url : `http://localhost:5000${url}`;
-        
-        const response = await fetch(fullUrl, mergedOptions);
-        
-        // التحقق من حالة الاستجابة
-        if (!response.ok) {
-            // محاولة قراءة رسالة الخطأ من الرد
-            let errorMessage = `HTTP ${response.status}`;
-            
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.message || errorData.error || errorMessage;
-            } catch (parseError) {
-                // إذا فشل تحويل الرد إلى JSON
-                const text = await response.text();
-                if (text) errorMessage = text.substring(0, 200);
+    // ✅ إعادة كتابة دالة apiRequest بشكل احترافي
+    async function apiRequest(endpoint, options = {}) {
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authToken ? `Bearer ${authToken}` : ''
             }
-            
-            // التحقق من حالة المصادقة
-            if (response.status === 401) {
-                // Token expired, logout
-                showMessage('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى', 'error');
-                setTimeout(() => logout(), 2000);
-            }
-            
-            throw new Error(errorMessage);
-        }
+        };
         
-        // محاولة تحويل الرد إلى JSON
+        const mergedOptions = { ...defaultOptions, ...options };
+        
         try {
-            const data = await response.json();
-            return data;
-        } catch (jsonError) {
-            console.error('JSON Parse Error:', jsonError);
-            throw new Error('استجابة غير صالحة من السيرفر');
-        }
-        
-    } catch (error) {
-        console.error('API Request Error:', error);
-        
-        // التحقق من نوع الخطأ
-        if (error.message.includes('Failed to fetch') || 
-            error.message.includes('NetworkError') ||
-            error.message.includes('ERR_CONNECTION_REFUSED')) {
+            // ✅ استخدام مسار نسبي فقط
+            const response = await fetch(endpoint, mergedOptions);
             
-            throw new Error('تعذر الاتصال بالسيرفر. تأكد من تشغيل السيرفر على localhost:5000');
+            // ✅ التحقق من حالة الاستجابة
+            if (!response.ok) {
+                let errorMessage = `تعذر الاتصال بالسيرفر (${response.status})`;
+                
+                // ✅ معالجة حالة 401 (انتهت الجلسة)
+                if (response.status === 401) {
+                    showMessage('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى', 'error');
+                    setTimeout(() => logout(), 2000);
+                    throw new Error('انتهت صلاحية الجلسة');
+                }
+                
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorData.error || errorMessage;
+                } catch (parseError) {
+                    // لا تفعل شيئاً، استخدم الرسالة الافتراضية
+                }
+                
+                throw new Error(errorMessage);
+            }
+            
+            // ✅ محاولة تحويل الرد إلى JSON
+            try {
+                return await response.json();
+            } catch (jsonError) {
+                console.error('JSON Parse Error:', jsonError);
+                throw new Error('استجابة غير صالحة من السيرفر');
+            }
+            
+        } catch (error) {
+            console.error('API Request Error:', error);
+            
+            // ✅ رسائل خطأ واضحة للمستخدم
+            if (error.message.includes('Failed to fetch') || 
+                error.message.includes('NetworkError') ||
+                error.message.includes('Network request failed')) {
+                
+                throw new Error('تعذر الاتصال بالسيرفر. يرجى المحاولة لاحقًا.');
+            }
+            
+            throw error;
         }
-        
-        throw error;
     }
-}
     
     // Dashboard Functions
     async function loadDashboardStats() {
@@ -1977,135 +1978,135 @@ async function apiRequest(url, options = {}) {
             }
         } catch (error) {
             console.error('Error loading dashboard stats:', error);
+            showMessage('تعذر تحميل إحصائيات لوحة التحكم', 'error');
         }
     }
     
-    // في دالة loadRecentActivities في admin.html
-function loadRecentActivities(projects, requests) {
-    const activitiesContainer = document.getElementById('recent-activities');
-    const recentProjectsList = document.getElementById('recent-projects-list');
-    const recentRequestsList = document.getElementById('recent-requests-list');
-    
-    if (!activitiesContainer || !recentProjectsList || !recentRequestsList) return;
-    
-    // Recent projects - بدون بيانات افتراضية
-    if (projects && Array.isArray(projects) && projects.length > 0) {
-        recentProjectsList.innerHTML = projects.slice(0, 5).map(project => `
-            <div style="padding: 10px; border-bottom: 1px solid var(--border-light);">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <strong style="color: var(--green); font-size: 0.9rem;">${project.title || 'بدون عنوان'}</strong>
-                    <span style="font-size: 0.8rem; color: var(--muted);">
-                        ${project.created_at ? formatDate(project.created_at) : '-'}
-                    </span>
+    function loadRecentActivities(projects, requests) {
+        const activitiesContainer = document.getElementById('recent-activities');
+        const recentProjectsList = document.getElementById('recent-projects-list');
+        const recentRequestsList = document.getElementById('recent-requests-list');
+        
+        if (!activitiesContainer || !recentProjectsList || !recentRequestsList) return;
+        
+        // Recent projects
+        if (projects && Array.isArray(projects) && projects.length > 0) {
+            recentProjectsList.innerHTML = projects.slice(0, 5).map(project => `
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-light);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: var(--green); font-size: 0.9rem;">${project.title || 'بدون عنوان'}</strong>
+                        <span style="font-size: 0.8rem; color: var(--muted);">
+                            ${project.created_at ? formatDate(project.created_at) : '-'}
+                        </span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--muted); margin-top: 5px;">
+                        ${project.category || 'عام'}
+                    </div>
                 </div>
-                <div style="font-size: 0.85rem; color: var(--muted); margin-top: 5px;">
-                    ${project.category || 'عام'}
+            `).join('');
+        } else {
+            recentProjectsList.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: var(--muted);">
+                    <i class="fas fa-project-diagram" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p>لا توجد مشاريع</p>
+                    <p style="font-size: 0.8rem; margin-top: 5px;">
+                        يمكنك إضافة مشاريع من قسم "إضافة مشروع جديد"
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Recent requests
+        if (requests && Array.isArray(requests) && requests.length > 0) {
+            recentRequestsList.innerHTML = requests.slice(0, 5).map(req => `
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-light);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: var(--blue); font-size: 0.9rem;">${req.name || 'بدون اسم'}</strong>
+                        <span class="status-badge status-${req.status || 'new'}">
+                            ${getStatusText(req.status)}
+                        </span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--muted); margin-top: 5px;">
+                        ${req.project_type || 'موقع ويب'}
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            recentRequestsList.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: var(--muted);">
+                    <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p>لا توجد طلبات</p>
+                    <p style="font-size: 0.8rem; margin-top: 5px;">
+                        سيظهر هنا الطلبات الواردة من الموقع الرئيسي
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Recent activities list
+        const allActivities = [];
+        
+        if (projects && Array.isArray(projects)) {
+            projects.forEach(project => {
+                allActivities.push({
+                    type: 'project',
+                    title: project.title || 'بدون عنوان',
+                    date: project.created_at,
+                    category: project.category || 'عام'
+                });
+            });
+        }
+        
+        if (requests && Array.isArray(requests)) {
+            requests.forEach(req => {
+                allActivities.push({
+                    type: 'request',
+                    title: req.name || 'بدون اسم',
+                    date: req.created_at,
+                    status: req.status || 'new'
+                });
+            });
+        }
+        
+        // إذا لم توجد أي نشاطات
+        if (allActivities.length === 0) {
+            activitiesContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--muted);">
+                    <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                    <p>لا توجد نشاطات حديثة</p>
+                    <p style="font-size: 0.9rem; margin-top: 10px;">
+                        ستبدأ النشاطات في الظهور عند:
+                    </p>
+                    <ul style="text-align: right; padding-right: 20px; margin-top: 10px;">
+                        <li>إضافة مشاريع جديدة</li>
+                        <li>استلام طلبات من الموقع</li>
+                        <li>تحديث حالة الطلبات</li>
+                    </ul>
+                </div>
+            `;
+            return;
+        }
+        
+        // Sort by date (newest first)
+        allActivities.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Display top 10 activities
+        activitiesContainer.innerHTML = allActivities.slice(0, 10).map(activity => `
+            <div style="padding: 10px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 10px;">
+                <div style="width: 30px; height: 30px; border-radius: 50%; background-color: ${activity.type === 'project' ? 'var(--green-dim)' : 'rgba(0, 136, 255, 0.1)'}; 
+                     display: flex; align-items: center; justify-content: center; color: ${activity.type === 'project' ? 'var(--green)' : 'var(--blue)'};">
+                    <i class="fas fa-${activity.type === 'project' ? 'project-diagram' : 'inbox'}"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; color: var(--text);">${activity.title}</div>
+                    <div style="font-size: 0.85rem; color: var(--muted);">
+                        ${activity.type === 'project' ? 'مشروع جديد' : 'طلب جديد'} - 
+                        ${activity.date ? formatDate(activity.date) : 'تاريخ غير معروف'}
+                    </div>
                 </div>
             </div>
         `).join('');
-    } else {
-        recentProjectsList.innerHTML = `
-            <div style="text-align: center; padding: 20px; color: var(--muted);">
-                <i class="fas fa-project-diagram" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <p>لا توجد مشاريع</p>
-                <p style="font-size: 0.8rem; margin-top: 5px;">
-                    يمكنك إضافة مشاريع من قسم "إضافة مشروع جديد"
-                </p>
-            </div>
-        `;
     }
-    
-    // Recent requests - بدون بيانات افتراضية
-    if (requests && Array.isArray(requests) && requests.length > 0) {
-        recentRequestsList.innerHTML = requests.slice(0, 5).map(req => `
-            <div style="padding: 10px; border-bottom: 1px solid var(--border-light);">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <strong style="color: var(--blue); font-size: 0.9rem;">${req.name || 'بدون اسم'}</strong>
-                    <span class="status-badge status-${req.status || 'new'}">
-                        ${getStatusText(req.status)}
-                    </span>
-                </div>
-                <div style="font-size: 0.85rem; color: var(--muted); margin-top: 5px;">
-                    ${req.project_type || 'موقع ويب'}
-                </div>
-            </div>
-        `).join('');
-    } else {
-        recentRequestsList.innerHTML = `
-            <div style="text-align: center; padding: 20px; color: var(--muted);">
-                <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <p>لا توجد طلبات</p>
-                <p style="font-size: 0.8rem; margin-top: 5px;">
-                    سيظهر هنا الطلبات الواردة من الموقع الرئيسي
-                </p>
-            </div>
-        `;
-    }
-    
-    // Recent activities list
-    const allActivities = [];
-    
-    if (projects && Array.isArray(projects)) {
-        projects.forEach(project => {
-            allActivities.push({
-                type: 'project',
-                title: project.title || 'بدون عنوان',
-                date: project.created_at,
-                category: project.category || 'عام'
-            });
-        });
-    }
-    
-    if (requests && Array.isArray(requests)) {
-        requests.forEach(req => {
-            allActivities.push({
-                type: 'request',
-                title: req.name || 'بدون اسم',
-                date: req.created_at,
-                status: req.status || 'new'
-            });
-        });
-    }
-    
-    // إذا لم توجد أي نشاطات
-    if (allActivities.length === 0) {
-        activitiesContainer.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: var(--muted);">
-                <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 20px;"></i>
-                <p>لا توجد نشاطات حديثة</p>
-                <p style="font-size: 0.9rem; margin-top: 10px;">
-                    ستبدأ النشاطات في الظهور عند:
-                </p>
-                <ul style="text-align: right; padding-right: 20px; margin-top: 10px;">
-                    <li>إضافة مشاريع جديدة</li>
-                    <li>استلام طلبات من الموقع</li>
-                    <li>تحديث حالة الطلبات</li>
-                </ul>
-            </div>
-        `;
-        return;
-    }
-    
-    // Sort by date (newest first)
-    allActivities.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    // Display top 10 activities
-    activitiesContainer.innerHTML = allActivities.slice(0, 10).map(activity => `
-        <div style="padding: 10px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 10px;">
-            <div style="width: 30px; height: 30px; border-radius: 50%; background-color: ${activity.type === 'project' ? 'var(--green-dim)' : 'rgba(0, 136, 255, 0.1)'}; 
-                 display: flex; align-items: center; justify-content: center; color: ${activity.type === 'project' ? 'var(--green)' : 'var(--blue)'};">
-                <i class="fas fa-${activity.type === 'project' ? 'project-diagram' : 'inbox'}"></i>
-            </div>
-            <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--text);">${activity.title}</div>
-                <div style="font-size: 0.85rem; color: var(--muted);">
-                    ${activity.type === 'project' ? 'مشروع جديد' : 'طلب جديد'} - 
-                    ${activity.date ? formatDate(activity.date) : 'تاريخ غير معروف'}
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
     
     function formatDate(dateString) {
         if (!dateString) return '-';
@@ -2160,7 +2161,7 @@ function loadRecentActivities(projects, requests) {
                             <i class="fas fa-project-diagram" style="font-size: 3rem; margin-bottom: 20px;"></i>
                             <p>لا توجد مشاريع ${filter === 'active-projects' ? 'نشطة' : filter === 'inactive-projects' ? 'غير نشطة' : ''}</p>
                             ${filter !== 'all' ? `
-                                <button class="btn btn-secondary" onclick="document.querySelector('[data-tab=\\"add-project\\"]').click()" 
+                                <button class="btn btn-secondary" onclick="document.querySelector('[data-tab=\"add-project\"]').click()" 
                                         style="margin-top: 15px;">
                                     <i class="fas fa-plus"></i> أضف مشروعاً جديداً
                                 </button>
@@ -2189,7 +2190,7 @@ function loadRecentActivities(projects, requests) {
                                     <tr>
                                         <td>
                                             ${project.image_url ? 
-                                                `<img src="http://localhost:5000${project.image_url}" alt="${project.title || 'مشروع'}" class="project-image-small">` : 
+                                                `<img src="${project.image_url}" alt="${project.title || 'مشروع'}" class="project-image-small">` : 
                                                 `<div class="no-image">
                                                     <i class="fas fa-image"></i>
                                                 </div>`
@@ -2250,7 +2251,7 @@ function loadRecentActivities(projects, requests) {
             projectsLoading.style.display = 'none';
             projectsMessage.innerHTML = `
                 <div class="message message-error">
-                    <i class="fas fa-exclamation-circle"></i> حدث خطأ في تحميل المشاريع: ${error.message}
+                    <i class="fas fa-exclamation-circle"></i> ${error.message}
                 </div>
             `;
         }
@@ -2262,7 +2263,7 @@ function loadRecentActivities(projects, requests) {
     
     async function editProject(projectId) {
         try {
-            const data = await apiRequest(`/api/admin/projects`);
+            const data = await apiRequest('/api/admin/projects');
             
             if (data.success) {
                 const projects = data.data || [];
@@ -2293,7 +2294,7 @@ function loadRecentActivities(projects, requests) {
                 }
             }
         } catch (error) {
-            showMessage(`خطأ في تحميل بيانات المشروع: ${error.message}`, 'error');
+            showMessage(`تعذر تحميل بيانات المشروع: ${error.message}`, 'error');
         }
     }
     
@@ -2323,7 +2324,7 @@ function loadRecentActivities(projects, requests) {
                 throw new Error(data.message || data.error || 'فشل في حذف المشروع');
             }
         } catch (error) {
-            showMessage(`خطأ في حذف المشروع: ${error.message}`, 'error');
+            showMessage(`تعذر حذف المشروع: ${error.message}`, 'error');
         }
     }
     
@@ -2471,7 +2472,7 @@ function loadRecentActivities(projects, requests) {
             if (addProjectMessage) {
                 addProjectMessage.innerHTML = `
                     <div class="message message-error">
-                        <i class="fas fa-exclamation-circle"></i> حدث خطأ في إضافة المشروع: ${error.message}
+                        <i class="fas fa-exclamation-circle"></i> ${error.message}
                     </div>
                 `;
             }
@@ -2556,7 +2557,7 @@ function loadRecentActivities(projects, requests) {
             if (editProjectMessage) {
                 editProjectMessage.innerHTML = `
                     <div class="message message-error">
-                        <i class="fas fa-exclamation-circle"></i> حدث خطأ في تحديث المشروع: ${error.message}
+                        <i class="fas fa-exclamation-circle"></i> ${error.message}
                     </div>
                 `;
             }
@@ -2680,7 +2681,7 @@ function loadRecentActivities(projects, requests) {
             if (requestsMessage) {
                 requestsMessage.innerHTML = `
                     <div class="message message-error">
-                        <i class="fas fa-exclamation-circle"></i> حدث خطأ في تحميل الطلبات: ${error.message}
+                        <i class="fas fa-exclamation-circle"></i> ${error.message}
                     </div>
                 `;
             }
@@ -2755,7 +2756,7 @@ function loadRecentActivities(projects, requests) {
             }
             
         } catch (error) {
-            showMessage(`خطأ في تحميل تفاصيل الطلب: ${error.message}`, 'error');
+            showMessage(`تعذر تحميل تفاصيل الطلب: ${error.message}`, 'error');
         }
     }
     
@@ -2792,7 +2793,7 @@ function loadRecentActivities(projects, requests) {
             }
             
         } catch (error) {
-            showMessage(`خطأ في تحديث حالة الطلب: ${error.message}`, 'error');
+            showMessage(`تعذر تحديث حالة الطلب: ${error.message}`, 'error');
         }
     }
     
@@ -2823,7 +2824,7 @@ function loadRecentActivities(projects, requests) {
             }
             
         } catch (error) {
-            showMessage(`خطأ في حذف الطلب: ${error.message}`, 'error');
+            showMessage(`تعذر حذف الطلب: ${error.message}`, 'error');
         }
     }
     
@@ -2863,346 +2864,280 @@ function loadRecentActivities(projects, requests) {
                 }
             })
             .catch(error => {
-                showMessage(`خطأ في فتح بريد العميل: ${error.message}`, 'error');
+                showMessage(`تعذر فتح بريد العميل: ${error.message}`, 'error');
             });
     }
     
-    
-    
- async function loadSettings() {
-    const settingsMessage = document.getElementById('settings-message');
-    
-    try {
-        // محاولة تحميل الإعدادات من API
-        const data = await apiRequest('/api/admin/settings');
+    // Settings Functions
+    async function loadSettings() {
+        const settingsMessage = document.getElementById('settings-message');
         
-        if (data.success) {
-            const settings = data.data || {};
+        try {
+            const data = await apiRequest('/api/admin/settings');
             
-            // Fill settings form
+            if (data.success) {
+                const settings = data.data || {};
+                
+                // Fill settings form
+                updateSettingsForm({
+                    site_title: settings.site_title || 'HawkStudio',
+                    site_description: settings.site_description || 'هندسة الويب، مفهومة البرمجيات أولاً',
+                    admin_email: settings.admin_email || 'hawkstudiio@gmail.com',
+                    contact_email: settings.contact_email || 'hawkstudiio@gmail.com',
+                    contact_phone: settings.contact_phone || '+961 71 235 414',
+                    contact_address: settings.contact_address || 'لبنان - البقاع - تعلبايا',
+                    max_file_size: settings.max_file_size || '5',
+                    projects_per_page: settings.projects_per_page || '9',
+                    email_notifications: settings.email_notifications || 'enabled',
+                    maintenance_mode: settings.maintenance_mode || 'disabled'
+                });
+                
+                if (settingsMessage) {
+                    settingsMessage.innerHTML = `
+                        <div class="message message-success">
+                            <i class="fas fa-check-circle"></i> تم تحميل الإعدادات بنجاح
+                        </div>
+                    `;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            
+            // تعيين القيم الافتراضية إذا فشل الاتصال
             updateSettingsForm({
-                site_title: settings.site_title || 'HawkStudio',
-                site_description: settings.site_description || 'هندسة الويب، مفهومة البرمجيات أولاً',
-                admin_email: settings.admin_email || 'hawkstudiio@gmail.com',
-                contact_email: settings.contact_email || 'hawkstudiio@gmail.com',
-                contact_phone: settings.contact_phone || '+961 71 235 414',
-                contact_address: settings.contact_address || 'لبنان - البقاع - تعلبايا',
-                max_file_size: settings.max_file_size || '5',
-                projects_per_page: settings.projects_per_page || '9',
-                email_notifications: settings.email_notifications || 'enabled',
-                maintenance_mode: settings.maintenance_mode || 'disabled'
+                site_title: 'HawkStudio',
+                site_description: 'هندسة الويب، مفهومة البرمجيات أولاً',
+                admin_email: 'hawkstudiio@gmail.com',
+                contact_email: 'hawkstudiio@gmail.com',
+                contact_phone: '+961 71 235 414',
+                contact_address: 'لبنان - البقاع - تعلبايا',
+                max_file_size: '5',
+                projects_per_page: '9',
+                email_notifications: 'enabled',
+                maintenance_mode: 'disabled'
             });
             
             if (settingsMessage) {
                 settingsMessage.innerHTML = `
-                    <div class="message message-success">
-                        <i class="fas fa-check-circle"></i> تم تحميل الإعدادات بنجاح
+                    <div class="message message-warning">
+                        <i class="fas fa-exclamation-triangle"></i> تم استخدام القيم الافتراضية
                     </div>
                 `;
             }
         }
-    } catch (error) {
-        console.error('Error loading settings:', error);
+    }
+    
+    async function handleSaveSettings(e) {
+        e.preventDefault();
         
-        // تعيين القيم الافتراضية إذا فشل الاتصال
-        updateSettingsForm({
-            site_title: 'HawkStudio',
-            site_description: 'هندسة الويب، مفهومة البرمجيات أولاً',
-            admin_email: 'hawkstudiio@gmail.com',
-            contact_email: 'hawkstudiio@gmail.com',
-            contact_phone: '+961 71 235 414',
-            contact_address: 'لبنان - البقاع - تعلبايا',
-            max_file_size: '5',
-            projects_per_page: '9',
-            email_notifications: 'enabled',
-            maintenance_mode: 'disabled'
-        });
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const settingsMessage = document.getElementById('settings-message');
         
+        // Clear previous messages
         if (settingsMessage) {
-            settingsMessage.innerHTML = `
-                <div class="message message-warning">
-                    <i class="fas fa-exclamation-triangle"></i> تم استخدام القيم الافتراضية (السيرفر غير متصل)
-                </div>
-            `;
+            settingsMessage.innerHTML = '';
         }
         
-        showMessage(`⚠️ تعذر تحميل الإعدادات: ${error.message}`, 'warning');
-    }
-}
-
-// تحديث دالة handleSaveSettings لتحديث الصفحة الرئيسية
-async function handleSaveSettings(e) {
-    e.preventDefault();
-    
-    const saveSettingsBtn = document.getElementById('save-settings-btn');
-    const settingsMessage = document.getElementById('settings-message');
-    
-    // Clear previous messages
-    if (settingsMessage) {
-        settingsMessage.innerHTML = '';
-    }
-    
-    // Get settings data
-    const settings = {
-        site_title: document.getElementById('site-title').value,
-        site_description: document.getElementById('site-description').value,
-        admin_email: document.getElementById('admin-email').value,
-        contact_email: document.getElementById('contact-email').value,
-        contact_phone: document.getElementById('contact-phone').value,
-        contact_address: document.getElementById('contact-address').value,
-        max_file_size: document.getElementById('max-file-size').value,
-        projects_per_page: document.getElementById('projects-per-page').value,
-        email_notifications: document.getElementById('email-notifications').value,
-        maintenance_mode: document.getElementById('maintenance-mode').value,
-        // إعدادات إضافية
-        maintenance_message: document.getElementById('site-description').value + ' - جاري الصيانة'
-    };
-    
-    // Validate required fields
-    if (!settings.site_title || !settings.admin_email) {
-        if (settingsMessage) {
-            settingsMessage.innerHTML = `
-                <div class="message message-error">
-                    <i class="fas fa-exclamation-circle"></i> يرجى ملء الحقول المطلوبة (عنوان الموقع، بريد المسؤول)
-                </div>
-            `;
-        }
-        return;
-    }
-    
-    // Disable submit button
-    saveSettingsBtn.disabled = true;
-    saveSettingsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
-    
-    try {
-        const data = await apiRequest('/api/admin/settings', {
-            method: 'POST',
-            body: JSON.stringify(settings)
-        });
-        
-        if (data.success) {
-            if (settingsMessage) {
-                settingsMessage.innerHTML = `
-                    <div class="message message-success">
-                        <i class="fas fa-check-circle"></i> تم حفظ الإعدادات بنجاح!
-                    </div>
-                `;
-            }
-            
-            // إظهار رسالة خاصة لوضع الصيانة
-            setTimeout(() => {
-                if (settings.maintenance_mode === 'enabled') {
-                    showMessage('✅ تم تفعيل وضع الصيانة. سيتم عرض صفحة الصيانة للمستخدمين الجدد.', 'success');
-                } else {
-                    showMessage('✅ تم تعطيل وضع الصيانة. الموقع يعمل بشكل طبيعي.', 'success');
-                }
-            }, 500);
-            
-            // تحديث إعدادات الموقع في الصفحة الرئيسية فوراً
-            setTimeout(() => {
-                // تحديث عنوان المتصفح إذا كان الصفحة الرئيسية مفتوحة
-                if (window.opener) {
-                    window.opener.location.reload();
-                }
-            }, 1000);
-            
-        } else {
-            throw new Error(data.message || data.error || 'فشل في حفظ الإعدادات');
-        }
-        
-    } catch (error) {
-        console.error('Error saving settings:', error);
-        if (settingsMessage) {
-            settingsMessage.innerHTML = `
-                <div class="message message-error">
-                    <i class="fas fa-exclamation-circle"></i> حدث خطأ في حفظ الإعدادات: ${error.message}
-                </div>
-            `;
-        }
-    } finally {
-        // Re-enable submit button
-        if (saveSettingsBtn) {
-            saveSettingsBtn.disabled = false;
-            saveSettingsBtn.innerHTML = '<i class="fas fa-save"></i> حفظ الإعدادات';
-        }
-    }
-}
-
-// أضف هذا المستمع للأحداث بعد تعريف handleSaveSettings
-document.getElementById('reset-settings-btn')?.addEventListener('click', function() {
-    openDeleteModal({
-        title: 'إعادة تعيين الإعدادات',
-        itemTitle: 'إعادة تعيين جميع الإعدادات',
-        message: 'هل تريد إعادة تعيين جميع الإعدادات إلى القيم الافتراضية؟ سيتم فقدان جميع التغييرات الحالية.',
-        callback: () => resetSettings()
-    });
-});
-
-// أضف هذه الدالة (استبدل الدالة القديمة إذا كانت موجودة)
-async function resetSettings() {
-    const resetBtn = document.getElementById('reset-settings-btn');
-    const originalText = resetBtn ? resetBtn.innerHTML : '';
-    
-    try {
-        // تعطيل الزر أثناء العملية
-        if (resetBtn) {
-            resetBtn.disabled = true;
-            resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التعيين...';
-        }
-        
-        // القيم الافتراضية للإعدادات
-        const defaultSettings = {
-            site_title: 'HawkStudio',
-            site_description: 'هندسة الويب، مفهومة البرمجيات أولاً',
-            admin_email: 'hawkstudiio@gmail.com',
-            contact_email: 'hawkstudiio@gmail.com',
-            contact_phone: '+961 71 235 414',
-            contact_address: 'لبنان - البقاع - تعلبايا',
-            max_file_size: '5',
-            projects_per_page: '9',
-            email_notifications: 'enabled',
-            maintenance_mode: 'disabled'
+        // Get settings data
+        const settings = {
+            site_title: document.getElementById('site-title').value,
+            site_description: document.getElementById('site-description').value,
+            admin_email: document.getElementById('admin-email').value,
+            contact_email: document.getElementById('contact-email').value,
+            contact_phone: document.getElementById('contact-phone').value,
+            contact_address: document.getElementById('contact-address').value,
+            max_file_size: document.getElementById('max-file-size').value,
+            projects_per_page: document.getElementById('projects-per-page').value,
+            email_notifications: document.getElementById('email-notifications').value,
+            maintenance_mode: document.getElementById('maintenance-mode').value
         };
         
-        // محاولة الاتصال بالـ API
-        let data;
+        // Validate required fields
+        if (!settings.site_title || !settings.admin_email) {
+            if (settingsMessage) {
+                settingsMessage.innerHTML = `
+                    <div class="message message-error">
+                        <i class="fas fa-exclamation-circle"></i> يرجى ملء الحقول المطلوبة (عنوان الموقع، بريد المسؤول)
+                    </div>
+                `;
+            }
+            return;
+        }
+        
+        // Disable submit button
+        saveSettingsBtn.disabled = true;
+        saveSettingsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+        
         try {
-            data = await apiRequest('/api/admin/settings', {
+            const data = await apiRequest('/api/admin/settings', {
+                method: 'POST',
+                body: JSON.stringify(settings)
+            });
+            
+            if (data.success) {
+                if (settingsMessage) {
+                    settingsMessage.innerHTML = `
+                        <div class="message message-success">
+                            <i class="fas fa-check-circle"></i> تم حفظ الإعدادات بنجاح!
+                        </div>
+                    `;
+                }
+                
+                // إظهار رسالة خاصة لوضع الصيانة
+                setTimeout(() => {
+                    if (settings.maintenance_mode === 'enabled') {
+                        showMessage('تم تفعيل وضع الصيانة. سيتم عرض صفحة الصيانة للمستخدمين الجدد.', 'success');
+                    } else {
+                        showMessage('تم تعطيل وضع الصيانة. الموقع يعمل بشكل طبيعي.', 'success');
+                    }
+                }, 500);
+                
+            } else {
+                throw new Error(data.message || data.error || 'فشل في حفظ الإعدادات');
+            }
+            
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            if (settingsMessage) {
+                settingsMessage.innerHTML = `
+                    <div class="message message-error">
+                        <i class="fas fa-exclamation-circle"></i> ${error.message}
+                    </div>
+                `;
+            }
+        } finally {
+            // Re-enable submit button
+            if (saveSettingsBtn) {
+                saveSettingsBtn.disabled = false;
+                saveSettingsBtn.innerHTML = '<i class="fas fa-save"></i> حفظ الإعدادات';
+            }
+        }
+    }
+    
+    async function resetSettings() {
+        const resetBtn = document.getElementById('reset-settings-btn');
+        const originalText = resetBtn ? resetBtn.innerHTML : '';
+        
+        try {
+            // تعطيل الزر أثناء العملية
+            if (resetBtn) {
+                resetBtn.disabled = true;
+                resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التعيين...';
+            }
+            
+            // القيم الافتراضية للإعدادات
+            const defaultSettings = {
+                site_title: 'HawkStudio',
+                site_description: 'هندسة الويب، مفهومة البرمجيات أولاً',
+                admin_email: 'hawkstudiio@gmail.com',
+                contact_email: 'hawkstudiio@gmail.com',
+                contact_phone: '+961 71 235 414',
+                contact_address: 'لبنان - البقاع - تعلبايا',
+                max_file_size: '5',
+                projects_per_page: '9',
+                email_notifications: 'enabled',
+                maintenance_mode: 'disabled'
+            };
+            
+            const data = await apiRequest('/api/admin/settings', {
                 method: 'POST',
                 body: JSON.stringify(defaultSettings)
             });
-        } catch (apiError) {
-            console.error('API Error:', apiError);
             
-            // إذا فشل الاتصال، استخدم fetch مباشرة
-            try {
-                const response = await fetch('http://localhost:5000/api/admin/settings', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': authToken ? `Bearer ${authToken}` : ''
-                    },
-                    body: JSON.stringify(defaultSettings)
-                });
+            if (data && data.success) {
+                showMessage('تم إعادة تعيين الإعدادات إلى القيم الافتراضية بنجاح', 'success');
                 
-                data = await response.json();
+                // تحديث نموذج الإعدادات مباشرة
+                updateSettingsForm(defaultSettings);
                 
-                if (!response.ok) {
-                    throw new Error(data.message || data.error || `HTTP ${response.status}`);
-                }
-            } catch (fetchError) {
-                console.error('Fetch Error:', fetchError);
-                throw new Error('تعذر الاتصال بالسيرفر. تأكد من تشغيل السيرفر.');
+            } else {
+                throw new Error(data?.message || data?.error || 'فشل في إعادة تعيين الإعدادات');
+            }
+            
+        } catch (error) {
+            console.error('Error resetting settings:', error);
+            showMessage(`تعذر إعادة تعيين الإعدادات: ${error.message}`, 'error');
+            
+            // على الرغم من الخطأ، نتمكن من تعيين القيم الافتراضية محلياً
+            const defaultSettings = {
+                site_title: 'HawkStudio',
+                site_description: 'هندسة الويب، مفهومة البرمجيات أولاً',
+                admin_email: 'hawkstudiio@gmail.com',
+                contact_email: 'hawkstudiio@gmail.com',
+                contact_phone: '+961 71 235 414',
+                contact_address: 'لبنان - البقاع - تعلبايا',
+                max_file_size: '5',
+                projects_per_page: '9',
+                email_notifications: 'enabled',
+                maintenance_mode: 'disabled'
+            };
+            
+            updateSettingsForm(defaultSettings);
+            showMessage('تم تعيين القيم محلياً', 'warning');
+            
+        } finally {
+            // إعادة تفعيل الزر
+            if (resetBtn) {
+                resetBtn.disabled = false;
+                resetBtn.innerHTML = originalText;
             }
         }
-        
-        if (data && data.success) {
-            showMessage('✅ تم إعادة تعيين الإعدادات إلى القيم الافتراضية بنجاح', 'success');
-            
-            // تحديث نموذج الإعدادات مباشرة
-            updateSettingsForm(defaultSettings);
-            
-            // عرض رسالة تأكيد
-            setTimeout(() => {
-                showMessage('تم تحديث النموذج بالقيم الجديدة', 'info');
-            }, 1000);
-            
-        } else {
-            throw new Error(data?.message || data?.error || 'فشل في إعادة تعيين الإعدادات');
-        }
-        
-    } catch (error) {
-        console.error('Error resetting settings:', error);
-        showMessage(`❌ خطأ في إعادة تعيين الإعدادات: ${error.message}`, 'error');
-        
-        // على الرغم من الخطأ، قد نتمكن من تعيين القيم الافتراضية محلياً
-        const defaultSettings = {
-            site_title: 'HawkStudio',
-            site_description: 'هندسة الويب، مفهومة البرمجيات أولاً',
-            admin_email: 'hawkstudiio@gmail.com',
-            contact_email: 'hawkstudiio@gmail.com',
-            contact_phone: '+961 71 235 414',
-            contact_address: 'لبنان - البقاع - تعلبايا',
-            max_file_size: '5',
-            projects_per_page: '9',
-            email_notifications: 'enabled',
-            maintenance_mode: 'disabled'
+    }
+    
+    // دالة مساعدة لتحديث نموذج الإعدادات
+    function updateSettingsForm(settings) {
+        const formFields = {
+            'site-title': settings.site_title,
+            'site-description': settings.site_description,
+            'admin-email': settings.admin_email,
+            'contact-email': settings.contact_email,
+            'contact-phone': settings.contact_phone,
+            'contact-address': settings.contact_address,
+            'max-file-size': settings.max_file_size,
+            'projects-per-page': settings.projects_per_page,
+            'email-notifications': settings.email_notifications,
+            'maintenance-mode': settings.maintenance_mode
         };
         
-        updateSettingsForm(defaultSettings);
-        showMessage('⚠️ تم تعيين القيم محلياً فقط. السيرفر غير متصل.', 'warning');
-        
-    } finally {
-        // إعادة تفعيل الزر
-        if (resetBtn) {
-            resetBtn.disabled = false;
-            resetBtn.innerHTML = originalText;
-        }
-    }
-}
-
-// دالة مساعدة لتحديث نموذج الإعدادات
-function updateSettingsForm(settings) {
-    const formFields = {
-        'site-title': settings.site_title,
-        'site-description': settings.site_description,
-        'admin-email': settings.admin_email,
-        'contact-email': settings.contact_email,
-        'contact-phone': settings.contact_phone,
-        'contact-address': settings.contact_address,
-        'max-file-size': settings.max_file_size,
-        'projects-per-page': settings.projects_per_page,
-        'email-notifications': settings.email_notifications,
-        'maintenance-mode': settings.maintenance_mode
-    };
-    
-    for (const [fieldId, value] of Object.entries(formFields)) {
-        const element = document.getElementById(fieldId);
-        if (element) {
-            element.value = value;
-        }
-    }
-}
-
-// أضف هذا الكود بعد تعريف resetSettings
-document.getElementById('check-server-btn')?.addEventListener('click', checkServerConnection);
-
-async function checkServerConnection() {
-    const btn = document.getElementById('check-server-btn');
-    const originalText = btn.innerHTML;
-    
-    try {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
-        
-        // محاولة الاتصال بـ /api/health
-        const response = await fetch('http://localhost:5000/api/health', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
+        for (const [fieldId, value] of Object.entries(formFields)) {
+            const element = document.getElementById(fieldId);
+            if (element) {
+                element.value = value;
             }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            showMessage(`✅ السيرفر يعمل: ${data.message || 'متصل'}`);
-        } else {
-            throw new Error(`فشل الاتصال (${response.status})`);
         }
-        
-    } catch (error) {
-        console.error('Server check failed:', error);
-        showMessage(`❌ فشل الاتصال بالسيرفر: ${error.message}`, 'error');
-        
-        // عرض نصائح استكشاف الأخطاء
-        setTimeout(() => {
-            showMessage('💡 تأكد من: 1) تشغيل السيرفر 2) البورت 5000 مفتوح 3) لا توجد جدران نارية', 'info');
-        }, 1000);
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
     }
-}
+    
+    async function checkServerConnection() {
+        const btn = document.getElementById('check-server-btn');
+        const originalText = btn.innerHTML;
+        
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+            
+            // محاولة الاتصال بـ /api/health
+            const response = await fetch('/api/health');
+            
+            if (response.ok) {
+                const data = await response.json();
+                showMessage(`السيرفر يعمل: ${data.message || 'متصل'}`);
+            } else {
+                throw new Error(`فشل الاتصال (${response.status})`);
+            }
+            
+        } catch (error) {
+            console.error('Server check failed:', error);
+            showMessage(`فشل الاتصال بالسيرفر`, 'error');
+            
+            // عرض نصائح استكشاف الأخطاء
+            setTimeout(() => {
+                showMessage('تأكد من تشغيل السيرفر وأن الوصول للإنترنت متاح', 'info');
+            }, 1000);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
     
     // Export functions to window object
     window.viewProject = viewProject;
@@ -3217,6 +3152,6 @@ async function checkServerConnection() {
     window.contactClient = contactClient;
     window.clearImagePreview = clearImagePreview;
     window.openDeleteModal = openDeleteModal;
-</script>
+    </script>
 </body>
 </html>
