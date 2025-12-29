@@ -1,0 +1,2729 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, viewport-fit=cover">
+    <title>HawkStudio — هندسة الأنظمة الرقمية بمنهجية برمجيات أولاً</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="/static/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/static/favicon.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ================ MOBILE FIRST BASE STYLES ================ */
+        :root {
+            --bg: #050807;
+            --bg-alt: #0b1410;
+            --green: #00ff88;
+            --green-dim: rgba(0, 255, 136, 0.15);
+            --text: #eafff4;
+            --muted: #7fa89a;
+            --border: rgba(0, 255, 136, 0.18);
+            --border-light: rgba(0, 255, 136, 0.08);
+            --card-bg: rgba(15, 30, 24, 0.78);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            --shadow-green: 0 4px 20px rgba(0, 255, 136, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+            font-size: 16px;
+            min-height: 100dvh;
+            min-height: -webkit-fill-available;
+            padding-right: var(--safe-right);
+            padding-left: var(--safe-left);
+            position: relative;
+        }
+
+        /* ================ CODE BACKGROUND EFFECT ================ */
+        .code-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            opacity: 0.4;
+            display: none;
+        }
+
+        #code-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            line-height: 1.6;
+            color: rgba(0, 255, 136, 0.15);
+            white-space: pre;
+            padding: 20px;
+            column-count: 2;
+            column-gap: 40px;
+            
+            mask-image: radial-gradient(
+                circle 150px at var(--mx, -500px) var(--my, -500px),
+                rgba(0, 0, 0, 1) 0%,
+                rgba(0, 0, 0, 1) 50%,
+                rgba(0, 0, 0, 0) 80%
+            );
+            -webkit-mask-image: radial-gradient(
+                circle 150px at var(--mx, -500px) var(--my, -500px),
+                rgba(0, 0, 0, 1) 0%,
+                rgba(0, 0, 0, 1) 50%,
+                rgba(0, 0, 0, 0) 80%
+            );
+        }
+
+        .site-content {
+            position: relative;
+            z-index: 2;
+            pointer-events: auto;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ================ CONTAINER & SECTIONS ================ */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 clamp(12px, 4vw, 20px);
+        }
+
+        section {
+            padding: clamp(50px, 10vw, 120px) 0;
+            position: relative;
+            width: 100%;
+        }
+
+        .section-header {
+            margin-bottom: clamp(30px, 6vw, 70px);
+            position: relative;
+            text-align: center;
+            width: 100%;
+        }
+
+        .section-header h2 {
+            font-size: clamp(1.6rem, 5vw, 2.5rem);
+            font-weight: 900;
+            margin-bottom: 12px;
+            color: var(--text);
+            position: relative;
+            display: inline-block;
+            line-height: 1.2;
+        }
+
+        .section-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: 50%;
+            transform: translateX(50%);
+            width: clamp(50px, 15vw, 80px);
+            height: 3px;
+            background-color: var(--green);
+            border-radius: 2px;
+        }
+
+        .section-desc {
+            font-size: clamp(0.95rem, 3vw, 1.2rem);
+            color: var(--muted);
+            max-width: min(800px, 100%);
+            margin: clamp(15px, 3vw, 25px) auto 0;
+            line-height: 1.7;
+            font-weight: 400;
+            text-align: center;
+            padding: 0 clamp(10px, 3vw, 20px);
+        }
+
+        /* ================ HEADER & NAVIGATION ================ */
+        header {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            padding: clamp(12px, 3vw, 20px) 0;
+            background-color: rgba(5, 8, 7, 0.98);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light);
+            z-index: 1000;
+            transition: var(--transition);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding-top: calc(clamp(12px, 3vw, 20px) + var(--safe-top));
+        }
+
+        header.scrolled {
+            padding: clamp(10px, 2.5vw, 15px) 0;
+            padding-top: calc(clamp(10px, 2.5vw, 15px) + var(--safe-top));
+            background-color: rgba(5, 8, 7, 0.99);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0 clamp(12px, 4vw, 20px);
+        }
+
+        .logo {
+            font-weight: 900;
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            letter-spacing: 1px;
+            color: var(--green);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            z-index: 1002;
+        }
+
+        .logo:hover {
+            transform: translateY(-2px);
+        }
+
+        .logo-icon {
+            font-size: clamp(1rem, 3vw, 1.4rem);
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: block;
+            background: none;
+            border: none;
+            color: var(--green);
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1002;
+            transition: var(--transition);
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .mobile-menu-btn:hover,
+        .mobile-menu-btn:active {
+            background-color: var(--green-dim);
+        }
+
+        /* Navigation Menu */
+        .nav-links {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: min(100%, 400px);
+            height: 100dvh;
+            height: 100vh;
+            background-color: rgba(5, 8, 7, 0.98);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            padding: calc(80px + var(--safe-top)) 30px 30px;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            z-index: 1001;
+            border-left: 1px solid var(--border);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-links.active {
+            right: 0;
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            position: relative;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            min-height: 52px;
+            width: 100%;
+        }
+
+        .nav-links a:last-child {
+            border-bottom: none;
+        }
+
+        .nav-links a:hover,
+        .nav-links a:active {
+            color: var(--green);
+            padding-right: 10px;
+        }
+
+        .nav-links a::after {
+            content: '→';
+            position: absolute;
+            left: 0;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a:active::after {
+            opacity: 1;
+            left: -10px;
+        }
+
+        /* Menu Overlay */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            backdrop-filter: blur(4px);
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* ================ HERO SECTION ================ */
+        .hero {
+            min-height: 100dvh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            align-items: center;
+            padding-top: calc(clamp(70px, 15vw, 100px) + var(--safe-top));
+            position: relative;
+            width: 100%;
+        }
+
+        .hero-content {
+            width: 100%;
+            max-width: min(850px, 100%);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards 0.3s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: clamp(20px, 4vw, 30px);
+            text-align: center;
+        }
+
+        .hero-highlight {
+            color: var(--green);
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            right: 0;
+            width: 100%;
+            height: 8px;
+            background-color: var(--green-dim);
+            z-index: -1;
+            transform: skewX(-12deg);
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+            color: var(--muted);
+            max-width: min(700px, 100%);
+            margin: 0 auto clamp(30px, 6vw, 50px);
+            line-height: 1.7;
+            font-weight: 300;
+            text-align: center;
+            padding: 0 clamp(10px, 4vw, 20px);
+        }
+
+        .hero-cta {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 clamp(10px, 4vw, 20px);
+        }
+
+        /* ================ BUTTONS ================ */
+        .btn {
+            padding: clamp(14px, 3vw, 16px) clamp(25px, 4vw, 35px);
+            border-radius: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            position: relative;
+            z-index: 5;
+            font-size: clamp(0.95rem, 2.5vw, 1rem);
+            width: 100%;
+            max-width: 320px;
+            min-height: 52px;
+            text-align: center;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .btn-primary {
+            background-color: var(--green);
+            color: #022;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:active {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-green);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--green);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover,
+        .btn-secondary:active {
+            background-color: var(--green-dim);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 255, 136, 0.1);
+        }
+
+        /* ================ CARDS ================ */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+            gap: clamp(20px, 4vw, 35px);
+            margin-top: clamp(20px, 4vw, 30px);
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: clamp(12px, 3vw, 20px);
+            padding: clamp(25px, 5vw, 40px);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.05) 0%, rgba(0, 255, 136, 0) 100%);
+            z-index: 1;
+        }
+        .card::before {
+    pointer-events: none;
+}
+
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--green);
+            box-shadow: var(--shadow-green);
+        }
+
+        .card-icon {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            color: var(--green);
+            margin-bottom: clamp(15px, 3vw, 25px);
+            position: relative;
+            z-index: 2;
+            transition: var(--transition);
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.05);
+        }
+
+        .card-title {
+            font-size: clamp(1.2rem, 3vw, 1.4rem);
+            font-weight: 800;
+            margin-bottom: clamp(12px, 2.5vw, 20px);
+            position: relative;
+            z-index: 2;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .card-desc {
+            color: var(--muted);
+            position: relative;
+            z-index: 2;
+            line-height: 1.6;
+            font-weight: 300;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        }
+
+        /* ================ PROJECTS GRID ================ */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+            gap: clamp(20px, 4vw, 35px);
+            margin-top: clamp(25px, 5vw, 40px);
+            width: 100%;
+        }
+
+        .project-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: clamp(12px, 3vw, 20px);
+            overflow: hidden;
+            transition: var(--transition);
+            width: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .project-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--green);
+            box-shadow: var(--shadow-green);
+        }
+
+        .project-image {
+            width: 100%;
+            height: clamp(160px, 35vw, 220px);
+            object-fit: cover;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition);
+            display: block;
+            background-color: var(--bg-alt);
+        }
+
+        .project-card:hover .project-image {
+            transform: scale(1.03);
+        }
+
+        .project-content {
+            padding: clamp(20px, 4vw, 30px);
+        }
+
+        .project-category {
+            display: inline-block;
+            background-color: var(--green-dim);
+            color: var(--green);
+            padding: 6px clamp(10px, 2vw, 15px);
+            border-radius: 20px;
+            font-size: clamp(0.8rem, 2vw, 0.85rem);
+            font-weight: 600;
+            margin-bottom: clamp(10px, 2vw, 15px);
+            transition: var(--transition);
+        }
+
+        .project-card:hover .project-category {
+            background-color: var(--green);
+            color: #022;
+        }
+
+        .project-title {
+            font-size: clamp(1.2rem, 3vw, 1.4rem);
+            font-weight: 800;
+            margin-bottom: clamp(10px, 2vw, 15px);
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .project-desc {
+            color: var(--muted);
+            margin-bottom: clamp(15px, 3vw, 20px);
+            line-height: 1.6;
+            font-weight: 300;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: clamp(15px, 3vw, 20px);
+        }
+
+        .tech-tag {
+            background-color: rgba(0, 255, 136, 0.1);
+            color: var(--green);
+            padding: 5px clamp(8px, 1.5vw, 12px);
+            border-radius: 12px;
+            font-size: clamp(0.75rem, 2vw, 0.8rem);
+            font-family: 'JetBrains Mono', monospace;
+            transition: var(--transition);
+        }
+
+        .project-card:hover .tech-tag {
+            background-color: var(--green);
+            color: #022;
+        }
+
+        /* ================ CAPABILITIES SECTION ================ */
+        .capabilities-section {
+            background: linear-gradient(to bottom, transparent, var(--bg-alt));
+            position: relative;
+        }
+
+        .capabilities-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to left, transparent, var(--green), transparent);
+        }
+
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+            gap: clamp(20px, 4vw, 30px);
+            margin-top: clamp(30px, 6vw, 50px);
+            width: 100%;
+        }
+
+        .capability-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: clamp(12px, 3vw, 16px);
+            padding: clamp(25px, 4vw, 30px);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .capability-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .capability-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            background: linear-gradient(45deg, transparent, var(--green-dim), transparent);
+            z-index: -1;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .capability-card:hover::before {
+            opacity: 1;
+        }
+
+        .capability-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--green);
+            box-shadow: var(--shadow-green);
+        }
+
+        .capability-icon {
+            font-size: clamp(1.8rem, 4vw, 2.2rem);
+            color: var(--green);
+            margin-bottom: clamp(15px, 3vw, 20px);
+            width: clamp(50px, 10vw, 60px);
+            height: clamp(50px, 10vw, 60px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--green-dim);
+            border-radius: 12px;
+            transition: var(--transition);
+        }
+
+        .capability-card:hover .capability-icon {
+            transform: rotate(5deg) scale(1.05);
+        }
+
+        .capability-title {
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
+            font-weight: 700;
+            margin-bottom: clamp(10px, 2vw, 15px);
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .capability-desc {
+            color: var(--muted);
+            line-height: 1.6;
+            font-weight: 300;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        }
+
+        /* ================ PROCESS SECTION ================ */
+        .process-timeline {
+            position: relative;
+            max-width: min(900px, 100%);
+            margin: clamp(40px, 8vw, 80px) auto 0;
+            padding: 0 clamp(10px, 4vw, 20px);
+        }
+
+        .process-timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 20px;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, var(--green), transparent);
+        }
+
+        .process-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: clamp(30px, 6vw, 60px);
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            width: 100%;
+        }
+
+        .process-step.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .process-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .process-step-content {
+            width: calc(100% - 50px);
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: clamp(12px, 3vw, 20px);
+            padding: clamp(20px, 4vw, 35px);
+            transition: var(--transition);
+            position: relative;
+            margin-right: 40px;
+        }
+
+        .process-step-content:hover {
+            transform: translateY(-3px);
+            border-color: var(--green);
+            box-shadow: var(--shadow-green);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -20px;
+            right: -40px;
+            width: clamp(40px, 8vw, 50px);
+            height: clamp(40px, 8vw, 50px);
+            background-color: var(--green);
+            color: #022;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            z-index: 2;
+            border: 3px solid var(--bg);
+            transition: var(--transition);
+        }
+
+        .process-step:hover .step-number {
+            transform: scale(1.05);
+        }
+
+        .step-content h3 {
+            font-size: clamp(1.2rem, 3vw, 1.4rem);
+            font-weight: 800;
+            margin-bottom: clamp(10px, 2vw, 15px);
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .step-content p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-weight: 300;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        }
+
+        /* ================ FORM ================ */
+        .form-container {
+            width: 100%;
+            max-width: min(750px, 100%);
+            margin: 0 auto;
+            padding: 0 clamp(10px, 4vw, 20px);
+        }
+
+        .form-group {
+            margin-bottom: clamp(15px, 3vw, 25px);
+            opacity: 0;
+            transform: translateY(10px);
+            width: 100%;
+        }
+
+        .form-group.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-weight: 500;
+            font-size: clamp(0.9rem, 2.5vw, 0.95rem);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: clamp(14px, 3vw, 18px) clamp(16px, 3vw, 22px);
+            background-color: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            transition: var(--transition);
+            position: relative;
+            z-index: 5;
+            -webkit-appearance: none;
+            appearance: none;
+            min-height: 52px;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 2px var(--green-dim);
+        }
+
+        .form-textarea {
+            min-height: clamp(120px, 30vw, 180px);
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .form-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2300ff88' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 15px center;
+            background-size: 12px;
+            padding-left: 40px;
+        }
+
+        /* ================ CONTACT ================ */
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+            gap: clamp(15px, 3vw, 30px);
+            margin-top: clamp(30px, 6vw, 50px);
+            width: 100%;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: clamp(15px, 3vw, 20px);
+            padding: clamp(20px, 4vw, 30px);
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: clamp(12px, 3vw, 16px);
+            transition: var(--transition);
+            opacity: 0;
+            transform: translateY(20px);
+            width: 100%;
+        }
+
+        .contact-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .contact-item:hover {
+            transform: translateY(-6px);
+            border-color: var(--green);
+            box-shadow: var(--shadow-green);
+        }
+
+        .contact-icon {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            color: var(--green);
+            width: clamp(50px, 10vw, 60px);
+            height: clamp(50px, 10vw, 60px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--green-dim);
+            border-radius: 12px;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .contact-item:hover .contact-icon {
+            transform: rotate(8deg) scale(1.05);
+        }
+
+        .contact-details h3 {
+            font-size: clamp(1.1rem, 3vw, 1.2rem);
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .contact-link {
+            color: var(--muted);
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-block;
+            font-weight: 300;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        }
+
+        .contact-link:hover,
+        .contact-link:active {
+            color: var(--green);
+        }
+
+        /* ================ FOOTER ================ */
+        footer {
+            padding: clamp(40px, 8vw, 80px) 0 clamp(30px, 6vw, 40px);
+            text-align: center;
+            color: var(--muted);
+            border-top: 1px solid var(--border-light);
+            position: relative;
+            z-index: 2;
+            background: linear-gradient(to top, var(--bg), transparent);
+            margin-top: auto;
+            width: 100%;
+            padding-bottom: calc(clamp(30px, 6vw, 40px) + var(--safe-bottom));
+        }
+
+        .footer-logo {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            font-weight: 900;
+            color: var(--green);
+            margin-bottom: clamp(15px, 3vw, 20px);
+            letter-spacing: 2px;
+            transition: var(--transition);
+            display: inline-block;
+        }
+
+        .footer-logo:hover {
+            transform: translateY(-3px);
+        }
+
+        .footer-tagline {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            margin-bottom: clamp(25px, 5vw, 40px);
+            font-weight: 300;
+            font-style: italic;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .copyright {
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+            color: var(--muted);
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        /* ================ ANIMATIONS ================ */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        /* ================ SCROLL REVEAL ================ */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Loading spinner */
+        .loading {
+            text-align: center;
+            padding: clamp(40px, 8vw, 60px);
+            color: var(--muted);
+            grid-column: 1 / -1;
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--green);
+            border-radius: 50%;
+            width: clamp(40px, 8vw, 50px);
+            height: clamp(40px, 8vw, 50px);
+            animation: spin 1s linear infinite;
+            margin: 0 auto clamp(15px, 3vw, 25px);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Alert messages */
+        .alert {
+            padding: clamp(15px, 3vw, 20px);
+            border-radius: 12px;
+            margin-bottom: clamp(20px, 4vw, 30px);
+            border: 1px solid;
+            position: relative;
+            z-index: 10;
+            animation: fadeIn 0.4s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            text-align: right;
+            width: 100%;
+        }
+
+        .alert-success {
+            background-color: rgba(0, 255, 136, 0.1);
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .alert-error {
+            background-color: rgba(255, 0, 68, 0.1);
+            border-color: #ff0044;
+            color: #ff6688;
+        }
+
+        .alert i {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* Scroll to top button */
+        .scroll-top {
+            position: fixed;
+            bottom: clamp(20px, 5vw, 30px);
+            left: clamp(20px, 5vw, 30px);
+            width: clamp(45px, 8vw, 50px);
+            height: clamp(45px, 8vw, 50px);
+            background-color: var(--green);
+            color: #022;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            cursor: pointer;
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            border: none;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .scroll-top:hover,
+        .scroll-top:active {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        /* ================ MEDIA QUERIES ================ */
+        /* Small Tablets and Large Phones */
+        @media (min-width: 481px) {
+            .hero-cta {
+                flex-direction: row;
+                justify-content: center;
+            }
+            
+            .btn {
+                width: auto;
+                min-width: 180px;
+            }
+            
+            .code-bg-container {
+                display: block;
+            }
+        }
+
+        /* Tablets */
+        @media (min-width: 769px) {
+            .nav-links {
+                position: static;
+                height: auto;
+                width: auto;
+                background: none;
+                backdrop-filter: none;
+                border: none;
+                padding: 0;
+                flex-direction: row;
+                gap: clamp(15px, 2.5vw, 30px);
+                overflow: visible;
+            }
+            
+            .nav-links a {
+                font-size: 0.95rem;
+                padding: 8px 0;
+                border-bottom: none;
+                min-height: auto;
+                width: auto;
+            }
+            
+            .nav-links a::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                width: 0;
+                height: 2px;
+                background-color: var(--green);
+                transition: width 0.3s ease;
+            }
+            
+            .nav-links a:hover::after,
+            .nav-links a:active::after {
+                width: 100%;
+                left: auto;
+                right: 0;
+                opacity: 1;
+            }
+            
+            .nav-links a:hover,
+            .nav-links a:active {
+                padding-right: 0;
+            }
+            
+            .mobile-menu-btn {
+                display: none;
+            }
+            
+            .menu-overlay {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: clamp(2.5rem, 6vw, 3.5rem);
+                text-align: right;
+            }
+            
+            .hero-subtitle {
+                text-align: right;
+                padding: 0;
+            }
+            
+            .hero-cta {
+                justify-content: flex-start;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+            
+            .projects-grid {
+                grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            }
+            
+            .capabilities-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+            
+            .process-timeline::before {
+                right: 50%;
+                transform: translateX(50%);
+            }
+            
+            .process-step {
+                align-items: center;
+            }
+            
+            .process-step:nth-child(odd) {
+                flex-direction: row-reverse;
+            }
+            
+            .process-step:nth-child(odd) .process-step-content {
+                margin-right: 0;
+                margin-left: 60px;
+            }
+            
+            .process-step:nth-child(even) .process-step-content {
+                margin-right: 60px;
+                margin-left: 0;
+            }
+            
+            .step-number {
+                right: 50%;
+                transform: translateX(50%);
+            }
+            
+            .process-step:hover .step-number {
+                transform: translateX(50%) scale(1.05);
+            }
+            
+            .contact-info {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+            
+            #code-bg {
+                font-size: 12px;
+                column-count: 3;
+            }
+        }
+
+        /* Desktops */
+        @media (min-width: 1025px) {
+            .hero h1 {
+                font-size: clamp(3.5rem, 7vw, 5.5rem);
+            }
+            
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
+            
+            .projects-grid {
+                grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            }
+            
+            .capabilities-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+            
+            .contact-info {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+
+        /* Large Desktops */
+        @media (min-width: 1201px) {
+            .container {
+                padding: 0 20px;
+            }
+        }
+
+        /* ================ TOUCH DEVICE ENHANCEMENTS ================ */
+        @media (hover: none) and (pointer: coarse) {
+            .btn,
+            .card,
+            .project-card,
+            .contact-item,
+            .capability-card {
+                cursor: default;
+            }
+            
+            .card:hover,
+            .project-card:hover,
+            .contact-item:hover,
+            .capability-card:hover {
+                transform: none;
+            }
+            
+            .btn:active,
+            .card:active,
+            .project-card:active,
+            .contact-item:active,
+            .capability-card:active {
+                transform: scale(0.98);
+            }
+            
+            .btn-primary:active {
+                transform: scale(0.98);
+                box-shadow: var(--shadow-green);
+            }
+            
+            .btn-secondary:active {
+                transform: scale(0.98);
+                background-color: var(--green-dim);
+            }
+        }
+
+        /* ================ REDUCED MOTION ================ */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            
+            .card,
+            .project-card,
+            .contact-item,
+            .capability-card,
+            .form-group,
+            .reveal {
+                opacity: 1 !important;
+                transform: none !important;
+                transition: none !important;
+            }
+            
+            .reveal.active {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+            
+            .hero-content {
+                animation: none;
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* ================ SAFARI iOS FIXES ================ */
+        @supports (-webkit-touch-callout: none) {
+            .hero {
+                min-height: -webkit-fill-available;
+            }
+            
+            input,
+            textarea {
+                font-size: 16px;
+            }
+            
+            .form-select {
+                font-size: 16px;
+            }
+        }
+
+        /* ================ ANDROID CHROME FIXES ================ */
+        @supports (-webkit-tap-highlight-color: transparent) {
+            .btn,
+            .card,
+            a {
+                -webkit-tap-highlight-color: transparent;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- طبقة خلفية الكود مع تأثير العدسة -->
+    <div class="code-bg-container">
+        <pre id="code-bg"></pre>
+    </div>
+    
+    <!-- طبقة محتوى الموقع -->
+    <div class="site-content">
+        <!-- Header -->
+        <header id="main-header">
+            <div class="container nav-container">
+                <a href="#" class="logo">
+                    <i class="fas fa-code logo-icon"></i>
+                    HAWKSTUDIO
+                </a>
+                
+                <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="فتح القائمة" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <nav class="nav-links" id="main-nav" aria-label="القائمة الرئيسية">
+                    <a href="#about">الهوية الهندسية</a>
+                    <a href="#capabilities">القدرات التقنية</a>
+                    <a href="#process">منهجية العمل</a>
+                    <a href="#recent-projects">المشاريع</a>
+                    <a href="#work">أنظمة مختارة</a>
+                    <a href="#request">طلب نظام</a>
+                    <a href="#contact">الاتصال مع الدعم الفني</a>
+                </nav>
+                
+                <div class="menu-overlay" id="menu-overlay"></div>
+            </div>
+        </header>
+        
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container hero-content">
+                <h1> ما تراه <span class="hero-highlight"> أنيق, </span><br> وما لا تراه أقوى </h1>
+                <p class="hero-subtitle">
+في HawkStudio، نتعامل مع كل مشروع كنظام برمجي متكامل من الواجهة إلى البنية الداخلية.
+نصمّم تجارب استخدام مدروسة، ونبني أنظمة قابلة للتوسع، عالية الأداء، وسهلة الصيانة.
+الواجهة ليست سوى الطبقة الظاهرة، أما القوة الحقيقية فتُبنى في العمق.                </p>
+                <div class="hero-cta">
+                    <a href="#request" class="btn btn-primary">
+                        <i class="fas fa-cogs"></i> ابدأ بناء نظامك
+                    </a>
+                    <a href="#process" class="btn btn-secondary">
+                        <i class="fas fa-sitemap"></i> اكتشف منهجيتنا
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- About Section -->
+        <section id="about" class="reveal">
+            <div class="container">
+                <div class="section-header">
+                    <h2>العقلية الهندسية</h2>
+                    <p class="section-desc">
+                        نحن لا نصمم واجهات، بل نهندس أنظمة. كل مشروع يبدأ بفهم العمليات التجارية وتحديد المتطلبات الوظيفية قبل أي خطوة تصميمية. هذا المنهج يضمن أن الناتج النهائي ليس جميلاً فحسب، بل فعال وقابل للنمو.
+                    </p>
+                </div>
+                
+                <div class="cards-grid">
+                    <div class="card reveal">
+                        <i class="fa-solid fa-vector-square card-icon"></i>
+                        <h3 class="card-title">التصميم المعماري أولاً</h3>
+                        <p class="card-desc">نبدأ كل مشروع بتصميم معماري متكامل يحدد المكونات، الاتصالات، وتدفقات البيانات قبل كتابة أي كود.</p>
+                    </div>
+                    
+                    <div class="card reveal">
+                        <i class="fa-solid fa-sliders card-icon"></i>
+                        <h3 class="card-title">الأداء كمبدأ أساسي</h3>
+                        <p class="card-desc">نحسن الأداء في كل طبقة من النظام، من قاعدة البيانات إلى واجهة المستخدم، كجزء أساسي من عملية البناء.</p>
+                    </div>
+                    
+                    <div class="card reveal">
+                        <i class="fa-solid fa-layer-group card-icon"></i>
+                        <h3 class="card-title">النمو القابل للإدارة</h3>
+                        <p class="card-desc">نبني أنظمة قابلة للتوسع تنمو مع عملك، مع الحفاظ على قدرة الفريق على صيانتها وتطويرها.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Capabilities Section -->
+        <section id="capabilities" class="capabilities-section reveal">
+            <div class="container">
+                <div class="section-header">
+                    <h2>القدرات الهندسية</h2>
+                    <p class="section-desc">
+                        نتمتع بخبرة عميقة في هندسة الأنظمة الرقمية عبر مجموعة من التقنيات والمنهجيات المتقدمة التي تضمن جودة واستقرار النظام النهائي.
+                    </p>
+                </div>
+                
+                <div class="capabilities-grid">
+                    <div class="capability-card reveal">
+                        <div class="capability-icon">
+                            <i class="fa-solid fa-diagram-project"></i>
+                        </div>
+                        <h3 class="capability-title">هندسة الأنظمة المعقدة</h3>
+                        <p class="capability-desc">تصميم أنظمة موزعة، معماريات ميكروسيرفيس، وأنظمة معالجة بيانات كبيرة الحجم مع التركيز على المرونة والفعالية.</p>
+                    </div>
+                    
+                    <div class="capability-card reveal">
+                        <div class="capability-icon">
+                            <i class="fa-solid fa-server"></i>
+                        </div>
+                        <h3 class="capability-title">تطوير Backend عالي الأداء</h3>
+                        <p class="capability-desc">بناء APIs موثوقة، قواعد بيانات محسنة، وأنظمة معالجة غير متزامنة تتعامل مع أحمال عمل عالية بكفاءة.</p>
+                    </div>
+                    
+                    <div class="capability-card reveal">
+                        <div class="capability-icon">
+                            <i class="fa-solid fa-desktop"></i>
+                        </div>
+                        <h3 class="capability-title">تطوير Frontend متقدم</h3>
+                        <p class="capability-desc">بناء واجهات معقدة وتفاعلية باستخدام أحدث أدوات وتقنيات تطوير الواجهات الأمامية مع الحفاظ على الأداء.</p>
+                    </div>
+                    
+                    <div class="capability-card reveal">
+                        <div class="capability-icon">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h3 class="capability-title">أمان الأنظمة</h3>
+                        <p class="capability-desc">تطبيق ممارسات أمنية متقدمة على مستوى التطبيق، الشبكة، والبيانات لحماية النظام من التهديدات الحديثة.</p>
+                    </div>
+                    
+                    <div class="capability-card reveal">
+                        <div class="capability-icon">
+                            <i class="fa-solid fa-expand"></i>
+                        </div>
+                        <h3 class="capability-title">هندسة القابلية للتوسع</h3>
+                        <p class="capability-desc">تصميم أنظمة تنمو بسلاسة مع زيادة الحمل وتعداد المستخدمين دون الحاجة لإعادة هندسة كاملة.</p>
+                    </div>
+                    
+                    <div class="capability-card reveal">
+                        <div class="capability-icon">
+                            <i class="fa-solid fa-gauge-high"></i>
+                        </div>
+                        <h3 class="capability-title">تحسين الأداء</h3>
+                        <p class="capability-desc">تحليل وتطبيق تحسينات الأداء على جميع مستويات النظام لضمان سرعة الاستجابة وكفاءة استخدام الموارد.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Process Section -->
+        <section id="process" class="reveal">
+            <div class="container">
+                <div class="section-header">
+                    <h2>منهجية هندسة الأنظمة</h2>
+                    <p class="section-desc">
+                        نتبع عملية هندسية منظمة تضمر جودة النظام النهائي ومواءمته مع متطلبات العمل الفعلية.
+                    </p>
+                </div>
+                
+                <div class="process-timeline">
+                    <div class="process-step reveal">
+                        <div class="process-step-content">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>تحليل المتطلبات المعماري</h3>
+                                <p>فهم عميق للعمليات التجارية، تدفقات البيانات، ومتطلبات النمو المستقبلية لبناء أساس هندسي متين.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step reveal">
+                        <div class="process-step-content">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>التصميم المعماري والتخطيط</h3>
+                                <p>رسم مخططات النظام، تحديد المكونات، واختيار التقنيات المناسبة بناءً على معايير الأداء والأمان والتوسع.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step reveal">
+                        <div class="process-step-content">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>التطوير المتوازي والاختبار</h3>
+                                <p>بناء النظام طبقة بطبقة مع اختبار كل مكون بشكل منفصل واختبار التكامل باستمرار لضمان الجودة.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step reveal">
+                        <div class="process-step-content">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h3>الضبط والتحسين</h3>
+                                <p>تحليل أداء النظام تحت أحمال مختلفة وتطبيق التحسينات اللازمة على مستوى الكود، قاعدة البيانات، والبنية التحتية.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step reveal">
+                        <div class="process-step-content">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h3>الإطلاق والدعم المستمر</h3>
+                                <p>نشر النظام في بيئة الإنتاج مع توفير مراقبة مستمرة، صيانة وقائية، ودعم فني للتعامل مع أي تحديات.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Recent Projects Section -->
+        <section id="recent-projects" class="reveal">
+            <div class="container">
+                <div class="section-header">
+                    <h2>المشاريع الهندسية</h2>
+                    <p class="section-desc">
+                        أنظمة حقيقية قمنا بهندستها وبنائها، كل نظام يمثل تحدياً هندسياً مختلفاً وحلاً مصمماً خصيصاً.
+                    </p>
+                </div>
+                
+                <div id="projects-container" class="projects-grid">
+                    <!-- المشاريع سيتم تعبئتها من API -->
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>جاري تحميل المشاريع الهندسية...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Work Section -->
+        <section id="work" class="reveal">
+            <div class="container">
+                <div class="section-header">
+                    <h2>أنظمة معمارية مختارة</h2>
+                    <p class="section-desc">
+                        نظرة معمقة على بعض الأنظمة المعقدة التي قمنا بهندستها وبنائها.
+                    </p>
+                </div>
+                
+                <div class="cards-grid">
+                    <div class="card reveal">
+                        <i class="fa-solid fa-network-wired card-icon"></i>
+                        <h3 class="card-title">منصة SaaS متعددة المستأجرين</h3>
+                        <p class="card-desc">نظام معمارية متعددة المستأجرين مع عزل بيانات كامل، قابلية توسع ديناميكية، وإدارة موارد ذكية.</p>
+                    </div>
+                    
+                    <div class="card reveal">
+                        <i class="fa-solid fa-bolt card-icon"></i>
+                        <h3 class="card-title">نظام معالجة بيانات في الوقت الحقيقي</h3>
+                        <p class="card-desc">معالجة وتدفق بيانات لحظي مع قدرة على التعامل مع 50,000+ حدث في الثانية مع تحليل متزامن.</p>
+                    </div>
+                    
+                    <div class="card reveal">
+                        <i class="fa-solid fa-robot card-icon"></i>
+                        <h3 class="card-title">منصة عمليات الأعمال</h3>
+                        <p class="card-desc">نظام متكامل مع محرك قواعد أعمال، سير عمل معقد، وتكامل مع 30+ نظام خارجي.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Request Section -->
+        <section id="request" class="reveal">
+            <div class="container">
+                <div class="section-header">
+                    <h2>طلب نظام هندسي</h2>
+                    <p class="section-desc">
+                        صف متطلبات نظامك بدقة. سنقوم بتحليلها هندسياً وتقديم مقاربة معمارية مناسبة.
+                    </p>
+                </div>
+                
+                <div class="form-container">
+                    <div class="card">
+                        <form id="project-request-form">
+                            <div id="form-message"></div>
+                            
+                            <div class="form-group reveal">
+                                <label class="form-label" for="name">الاسم / الجهة</label>
+                                <input type="text" id="name" class="form-input" placeholder="اسمك أو اسم المؤسسة" required>
+                            </div>
+                            
+                            <div class="form-group reveal">
+                                <label class="form-label" for="email">البريد الإلكتروني التقني</label>
+                                <input type="email" id="email" class="form-input" placeholder="engineering@yourcompany.com" required>
+                            </div>
+                            
+                            <div class="form-group reveal">
+    <label class="form-label" for="project-type">
+        نوع المشروع (واجهة + نظام متكامل)
+    </label>
+
+    <select id="project-type" class="form-select">
+
+        <!-- أنظمة متكاملة -->
+        <option value="internal-system">نظام داخلي متكامل (واجهة + منطق + إدارة)</option>
+        <option value="erp-system">نظام ERP متكامل</option>
+        <option value="crm-system">نظام CRM متكامل</option>
+        <option value="accounting-system">نظام محاسبي متكامل</option>
+        <option value="inventory-system">نظام إدارة مخزون</option>
+        <option value="hr-system">نظام موارد بشرية</option>
+        <option value="custom-dashboard">لوحة تحكم + نظام خلفي</option>
+
+        <!-- مواقع ويب (تصميم + برمجة) -->
+        <option value="website-design">موقع ويب (تصميم فقط)</option>
+        <option value="website-development">موقع ويب متكامل (تصميم + برمجة)</option>
+        <option value="landing-page">Landing Page برمجية</option>
+        <option value="company-website">موقع شركة متكامل</option>
+        <option value="portfolio-website">موقع عرض أعمال</option>
+        <option value="ecommerce-website">متجر إلكتروني (واجهة + نظام)</option>
+
+        <!-- تطبيقات -->
+        <option value="web-application">تطبيق ويب (Web App متكامل)</option>
+        <option value="desktop-application">تطبيق سطح مكتب</option>
+        <option value="mobile-application">تطبيق جوال</option>
+        <option value="cross-platform-app">تطبيق متعدد المنصات</option>
+
+        <!-- Backend & Infrastructure -->
+        <option value="backend-development">برمجة Backend فقط</option>
+        <option value="api-development">تصميم وبرمجة APIs</option>
+        <option value="database-design">تصميم قواعد بيانات</option>
+        <option value="system-integration">تكامل وربط أنظمة</option>
+
+        <!-- تحسين وتطوير -->
+        <option value="performance-improvement">تحسين أداء نظام قائم</option>
+        <option value="bug-fixing">إصلاح أخطاء برمجية</option>
+        <option value="system-upgrade">تطوير وتوسعة نظام</option>
+        <option value="code-refactor">إعادة هيكلة وتنظيم الكود</option>
+
+        <!-- أمان -->
+        <option value="system-security">تأمين نظام أو تطبيق</option>
+        <option value="authentication-system">نظام صلاحيات وتسجيل دخول</option>
+
+        <!-- مخصص -->
+        <option value="custom-programming">حل Full-Stack مخصص</option>
+        <option value="technical-consultation">استشارة هندسية فقط</option>
+
+    </select>
+</div>
+
+
+                            
+                            <div class="form-group reveal">
+                                <label class="form-label" for="description">الوصف الهندسي للنظام</label>
+                                <textarea id="description" class="form-textarea" placeholder="صف متطلبات النظام، التحديات التقنية، أحمال العمل المتوقعة، ومتطلبات النمو المستقبلية..." required></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary reveal">
+                                <i class="fas fa-paper-plane"></i> إرسال التحليل الهندسي
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Contact Section -->
+        <section id="contact" class="reveal">
+            <div class="container">
+                <div class="section-header">
+                    <h2>التواصل مع الدعم الفني</h2>
+                    <p class="section-desc">
+                        للاستفسارات التقنية والمناقشات المعمارية، فريقنا الهندسي جاهز للتواصل.
+                    </p>
+                </div>
+                
+                <div class="contact-info">
+                    <div class="contact-item reveal">
+                        <div class="contact-icon">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>البريد الهندسي</h3>
+                            <p>
+                                <a href="mailto:hawkstudiio@gmail.com?subject=Technical Inquiry - System Architecture" 
+                                   class="contact-link">
+                                   hawkstudiio@gmail.com
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item reveal">
+                        <div class="contact-icon">
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>الاتصال التقني</h3>
+                            <p>
+                                <a href="tel:+96171235414" 
+                                   class="contact-link">
+                                   +961 71 235 414
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item reveal">
+                        <div class="contact-icon">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>مركز الهندسة</h3>
+                            <p>لبنان • البقاع • تعلبايا</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item reveal">
+                        <div class="contact-icon">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>الاستجابة الهندسية</h3>
+                            <p>تحليل أولي خلال 24 ساعة</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div class="footer-logo">HAWKSTUDIO</div>
+                <p class="footer-tagline">التركيز على الشكل ينتهي عند أول ضغط حقيقي… هندسة الأنظمة تبدأ هناك.</p>
+                <p class="copyright">© 2025 HawkStudio — كل الأنظمة تعمل، كل التصميمات تؤدي.</p>
+            </div>
+        </footer>
+        
+        <!-- Scroll to top button -->
+        <button class="scroll-top" id="scrollTop" aria-label="العودة إلى الأعلى">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <script>
+    // ================ API CONFIGURATION ================
+    const API_CONFIG = {
+        BASE_URL: window.location.origin,
+        ENDPOINTS: {
+            PROJECTS: '/api/projects',
+            PROJECT_REQUEST: '/api/project-request',
+            SITE_STATUS: '/api/site-status'
+        },
+        HEADERS: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    };
+
+
+    // ================ INITIALIZATION ================
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeSite();
+    });
+    
+    async function initializeSite() {
+        try {
+            // التحقق من وضع الصيانة
+            const isMaintenance = await checkMaintenanceMode();
+            if (isMaintenance) return;
+
+            // تهيئة جميع المكونات
+            initCodeBackground();
+            initHeaderScroll();
+            initMobileMenu();
+            initScrollReveal();
+            initForms();
+            initScrollToTop();
+            
+            // جلب البيانات الحقيقية من API
+            await loadProjects();
+            
+            animateElements();
+            setupTouchOptimizations();
+            setupInputOptimizations();
+            detectDeviceType();
+            
+            // إعداد معالج تغيير حجم الشاشة
+            setupResizeHandler();
+            
+        } catch (error) {
+            console.error('Error initializing site:', error);
+            showError('حدث خطأ في تحميل الموقع', true);
+        }
+    }
+    
+    // ================ MAINTENANCE MODE CHECK ================
+    async function checkMaintenanceMode() {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SITE_STATUS}`, {
+                method: 'GET',
+                headers: API_CONFIG.HEADERS,
+                cache: 'no-cache'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success && data.data && data.data.maintenance_mode === 'enabled') {
+                window.location.href = `${API_CONFIG.BASE_URL}/maintenance`;
+                return true;
+            }
+            return false;
+            
+        } catch (error) {
+            console.log('Cannot check maintenance mode, continuing normally:', error);
+            return false;
+        }
+    }
+    
+    // ================ CODE BACKGROUND ================
+    function initCodeBackground() {
+        const codeBg = document.getElementById('code-bg');
+        if (!codeBg) return;
+        
+        // كود خلفية حقيقي يعكس هندسة الأنظمة
+        const realCode = `
+// HawkStudio System Architecture Template
+class SystemArchitecture {
+    constructor(requirements) {
+        this.requirements = requirements;
+        this.layers = this.initializeLayers();
+        this.components = new Map();
+        this.dataFlows = [];
+        this.securityLayers = [];
+    }
+    
+    initializeLayers() {
+        return {
+            presentation: new PresentationLayer(),
+            application: new ApplicationLayer(),
+            domain: new DomainLayer(),
+            infrastructure: new InfrastructureLayer(),
+            persistence: new PersistenceLayer()
+        };
+    }
+    
+    validateArchitecture() {
+        // التحقق من جودة المعمارية
+        const validations = [
+            this.validateScalability(),
+            this.validateSecurity(),
+            this.validatePerformance(),
+            this.validateMaintainability()
+        ];
+        
+        return validations.every(v => v.valid);
+    }
+}
+
+// Real-time Data Processing Pipeline
+async function processRealTimeData(source, config) {
+    const pipeline = new DataPipeline(config);
+    
+    try {
+        await pipeline.initialize();
+        
+        const processor = new StreamProcessor({
+            windowSize: config.windowSize,
+            parallelism: config.parallelism
+        });
+        
+        const results = await processor.process(source);
+        return await pipeline.persist(results);
+        
+    } catch (error) {
+        logger.error('Pipeline execution failed:', error);
+        throw new PipelineError(error.message);
+    }
+}
+
+// Microservices Communication Pattern
+class ServiceMesh {
+    constructor(services) {
+        this.services = services;
+        this.serviceRegistry = new ServiceRegistry();
+        this.loadBalancer = new LoadBalancer();
+        this.circuitBreaker = new CircuitBreaker();
+    }
+    
+    async callService(serviceName, method, data) {
+        const service = this.serviceRegistry.get(serviceName);
+        
+        if (!service) {
+            throw new ServiceNotFoundError(serviceName);
+        }
+        
+        return this.circuitBreaker.execute(async () => {
+            const endpoint = this.loadBalancer.selectEndpoint(service);
+            const response = await fetch(\`\${endpoint}/\${method}\`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) {
+                throw new ServiceError(\`Service \${serviceName} returned \${response.status}\`);
+            }
+            
+            return await response.json();
+        });
+    }
+}
+
+// Database Optimization Strategy
+class DatabaseOptimizer {
+    constructor(databaseConfig) {
+        this.config = databaseConfig;
+        this.indexManager = new IndexManager();
+        this.queryOptimizer = new QueryOptimizer();
+        this.connectionPool = new ConnectionPool();
+    }
+    
+    async optimizeQuery(query, parameters) {
+        const optimizedQuery = this.queryOptimizer.optimize(query);
+        
+        const executionPlan = await this.analyzeExecutionPlan(optimizedQuery, parameters);
+        
+        if (executionPlan.cost > this.config.maxQueryCost) {
+            await this.indexManager.suggestIndexes(query);
+        }
+        
+        return {
+            query: optimizedQuery,
+            executionPlan,
+            recommendations: this.generateRecommendations(executionPlan)
+        };
+    }
+}
+
+// Security Middleware Stack
+const securityMiddleware = [
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                scriptSrc: ["'self'"],
+                imgSrc: ["'self'", "data:", "https:"],
+                connectSrc: ["'self'", API_CONFIG.BASE_URL]
+            }
+        }
+    }),
+    rateLimiter({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100 // limit each IP to 100 requests per windowMs
+    }),
+    cors({
+        origin: process.env.ALLOWED_ORIGINS?.split(',') || [API_CONFIG.BASE_URL],
+        credentials: true
+    }),
+    csrf({ cookie: true })
+];
+
+// Performance Monitoring
+class PerformanceMonitor {
+    constructor() {
+        this.metrics = new Map();
+        this.thresholds = {
+            responseTime: 200, // ms
+            cpuUsage: 70, // percent
+            memoryUsage: 80, // percent
+            errorRate: 1 // percent
+        };
+    }
+    
+    recordMetric(name, value, tags = {}) {
+        const timestamp = Date.now();
+        const metric = { name, value, tags, timestamp };
+        
+        this.metrics.set(\`\${name}_\${timestamp}\`, metric);
+        
+        // التحقق من العتبات
+        this.checkThresholds(name, value, tags);
+        
+        // حفظ في قاعدة البيانات
+        this.persistMetric(metric);
+    }
+    
+    checkThresholds(name, value, tags) {
+        const threshold = this.thresholds[name];
+        
+        if (threshold && value > threshold) {
+            this.alert(\`\${name} exceeded threshold: \${value} > \${threshold}\`, {
+                severity: 'warning',
+                tags
+            });
+        }
+    }
+}`;
+        
+        // تكرار الكود لملء الخلفية
+        let codeLines = [];
+        const lineCount = window.innerWidth <= 768 ? 60 : 150;
+        
+        // تقسيم الكود إلى أسطر وإضافة بعض التعديلات للتنوع
+        const baseLines = realCode.split('\n');
+        for (let i = 0; i < lineCount; i++) {
+            const line = baseLines[i % baseLines.length];
+            // إضافة بعض التغييرات الطفيفة للتنوع
+            const modifiedLine = line.replace(/(\b\w+\b)/g, (match) => {
+                if (Math.random() > 0.9 && /^[A-Z]/.test(match)) {
+                    return match + Math.floor(Math.random() * 10);
+                }
+                return match;
+            });
+            codeLines.push(modifiedLine);
+        }
+        
+        codeBg.textContent = codeLines.join('\n');
+        
+        // تأثير الماوس فقط في الأجهزة غير اللمسية
+        if (!('ontouchstart' in window)) {
+            document.addEventListener('mousemove', (e) => {
+                codeBg.style.setProperty('--mx', `${e.clientX}px`);
+                codeBg.style.setProperty('--my', `${e.clientY}px`);
+            });
+        }
+    }
+    
+    // ================ HEADER SCROLL EFFECT ================
+    function initHeaderScroll() {
+        const header = document.getElementById('main-header');
+        if (!header) return;
+        
+        let lastScroll = 0;
+        const scrollThreshold = 50;
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.scrollY;
+            
+            if (currentScroll > scrollThreshold) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            
+            // إخفاء القائمة المتنقلة عند التمرير
+            if (Math.abs(currentScroll - lastScroll) > 10) {
+                const mainNav = document.getElementById('main-nav');
+                const menuOverlay = document.getElementById('menu-overlay');
+                const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+                
+                if (mainNav && mainNav.classList.contains('active')) {
+                    mainNav.classList.remove('active');
+                    if (menuOverlay) menuOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                    
+                    if (mobileMenuToggle) {
+                        const icon = mobileMenuToggle.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fa-times');
+                            icon.classList.add('fa-bars');
+                        }
+                        mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                    }
+                }
+            }
+            
+            lastScroll = currentScroll;
+        });
+    }
+    
+    // ================ MOBILE MENU ================
+    function initMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mainNav = document.getElementById('main-nav');
+        const menuOverlay = document.getElementById('menu-overlay');
+        
+        if (!mobileMenuToggle || !mainNav) return;
+        
+        mobileMenuToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isActive = mainNav.classList.contains('active');
+            
+            if (isActive) {
+                closeMobileMenu();
+            } else {
+                openMobileMenu();
+            }
+        });
+        
+        if (menuOverlay) {
+            menuOverlay.addEventListener('click', closeMobileMenu);
+        }
+        
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && mainNav.classList.contains('active')) {
+                closeMobileMenu();
+            }
+        });
+        
+        mainNav.addEventListener('touchmove', function(e) {
+            if (this.classList.contains('active')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        function openMobileMenu() {
+            mainNav.classList.add('active');
+            if (menuOverlay) menuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            const icon = mobileMenuToggle.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            }
+            mobileMenuToggle.setAttribute('aria-expanded', 'true');
+            
+            const firstLink = mainNav.querySelector('a');
+            if (firstLink) firstLink.focus();
+        }
+        
+        function closeMobileMenu() {
+            mainNav.classList.remove('active');
+            if (menuOverlay) menuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            const icon = mobileMenuToggle.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+            mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            mobileMenuToggle.focus();
+        }
+    }
+    
+    // ================ SCROLL REVEAL ================
+    function initScrollReveal() {
+        const reveals = document.querySelectorAll('.reveal');
+        if (reveals.length === 0) return;
+        
+        const revealOnScroll = () => {
+            const windowHeight = window.innerHeight;
+            const revealPoint = 100;
+            
+            reveals.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                
+                if (elementTop < windowHeight - revealPoint) {
+                    element.classList.add('active');
+                }
+            });
+        };
+        
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll();
+    }
+    
+    // ================ FORM HANDLING ================
+    function initForms() {
+        const requestForm = document.getElementById('project-request-form');
+        if (!requestForm) return;
+        
+        const formMessage = document.getElementById('form-message');
+        
+        requestForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!validateForm(this)) return;
+            
+            const formData = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                project_type: document.getElementById('project-type').value,
+                description: document.getElementById('description').value.trim(),
+                timestamp: new Date().toISOString(),
+                source: 'hawkstudio_website'
+            };
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحليل الهندسي...';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PROJECT_REQUEST}`, {
+                    method: 'POST',
+                    headers: API_CONFIG.HEADERS,
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (formMessage) {
+                        formMessage.innerHTML = `
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> 
+                                شكراً ${formData.name}! تم استلام متطلبات النظام الهندسية. 
+                                سنقوم بتحليلها وإرسال مقاربة معمارية أولية خلال 24 ساعة على ${formData.email}.
+                            </div>
+                        `;
+                    }
+                    
+                    this.reset();
+                    
+                } else {
+                    throw new Error(result.message || result.error || 'حدث خطأ ما');
+                }
+                
+            } catch (error) {
+                console.error('Form submission error:', error);
+                
+                if (formMessage) {
+                    formMessage.innerHTML = `
+                        <div class="alert alert-error">
+                            <i class="fas fa-exclamation-circle"></i> 
+                            حدث خطأ في إرسال التحليل الهندسي. يرجى المحاولة مرة أخرى أو الاتصال بنا مباشرة.
+                        </div>
+                    `;
+                }
+                
+                showError('فشل في إرسال النموذج: ' + error.message);
+                
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                if (formMessage) {
+                    setTimeout(() => {
+                        formMessage.innerHTML = '';
+                    }, 8000);
+                }
+            }
+        });
+        
+        const inputs = requestForm.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+    }
+    
+    function validateForm(form) {
+        let isValid = true;
+        const requiredFields = form.querySelectorAll('[required]');
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('error');
+                isValid = false;
+                
+                if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('error-message')) {
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'error-message';
+                    errorMsg.style.color = '#ff6688';
+                    errorMsg.style.fontSize = '0.85rem';
+                    errorMsg.style.marginTop = '5px';
+                    errorMsg.textContent = 'هذا الحقل مطلوب';
+                    field.parentNode.appendChild(errorMsg);
+                }
+            } else {
+                field.classList.remove('error');
+                const errorMsg = field.parentNode.querySelector('.error-message');
+                if (errorMsg) errorMsg.remove();
+            }
+            
+            // تحقق من صحة البريد الإلكتروني
+            if (field.type === 'email' && field.value.trim()) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(field.value.trim())) {
+                    field.classList.add('error');
+                    isValid = false;
+                    
+                    if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('error-message')) {
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'error-message';
+                        errorMsg.style.color = '#ff6688';
+                        errorMsg.style.fontSize = '0.85rem';
+                        errorMsg.style.marginTop = '5px';
+                        errorMsg.textContent = 'البريد الإلكتروني غير صالح';
+                        field.parentNode.appendChild(errorMsg);
+                    }
+                }
+            }
+        });
+        
+        return isValid;
+    }
+    
+    // ================ LOAD REAL PROJECTS FROM API ================
+    async function loadProjects() {
+        const container = document.getElementById('projects-container');
+        if (!container) return;
+        
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PROJECTS}`, {
+                method: 'GET',
+                headers: API_CONFIG.HEADERS,
+                cache: 'no-cache'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && Array.isArray(result.data)) {
+                const projects = result.data;
+                
+                if (projects.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 60px; color: var(--muted); grid-column: 1 / -1;">
+                            <i class="fas fa-project-diagram" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                            <p>لا توجد مشاريع هندسية حالياً</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = projects.map(project => `
+                    <div class="project-card reveal">
+                        ${project.image_url ? `
+                            <img src="${API_CONFIG.BASE_URL}${project.image_url}" 
+                                 alt="${project.title || 'مشروع هندسي'}" 
+                                 class="project-image" 
+                                 loading="lazy" 
+                                 decoding="async"
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width: 100%; height: 220px; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; color: var(--muted); border-bottom: 1px solid var(--border);\\'><i class=\\'fas fa-diagram-project\\' style=\\'font-size: 3rem;\\'></i></div>'">
+                        ` : `
+                            <div style="width: 100%; height: 220px; background: var(--bg-alt); display: flex; align-items: center; justify-content: center; color: var(--muted); border-bottom: 1px solid var(--border);">
+                                <i class="fas fa-diagram-project" style="font-size: 3rem;"></i>
+                            </div>
+                        `}
+                        <div class="project-content">
+                            <span class="project-category">${project.category || 'هندسة أنظمة'}</span>
+                            <h3 class="project-title">${project.title || 'نظام هندسي'}</h3>
+                            <p class="project-desc">${(project.description || '').substring(0, 120)}...</p>
+                            ${project.technologies ? `
+                                <div class="project-tech">
+                                    ${project.technologies.split(',').slice(0, 4).map(tech => `
+                                        <span class="tech-tag">${tech.trim()}</span>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+                
+                setTimeout(() => {
+                    const projectCards = container.querySelectorAll('.project-card');
+                    projectCards.forEach((card, index) => {
+                        setTimeout(() => {
+                            card.classList.add('visible');
+                        }, index * 100);
+                    });
+                }, 100);
+                
+            } else {
+                throw new Error(result.message || result.error || 'فشل في تحميل المشاريع');
+            }
+            
+        } catch (error) {
+            console.error('Error loading projects:', error);
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px; color: var(--muted); grid-column: 1 / -1;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                    <p>حدث خطأ في تحميل المشاريع الهندسية</p>
+                    <button onclick="loadProjects()" class="btn btn-secondary" style="margin-top: 20px;">
+                        <i class="fas fa-redo"></i> إعادة المحاولة
+                    </button>
+                </div>
+            `;
+            
+            showError('فشل في تحميل المشاريع: ' + error.message);
+        }
+    }
+    
+    // ================ SCROLL TO TOP ================
+    function initScrollToTop() {
+        const scrollTopBtn = document.getElementById('scrollTop');
+        if (!scrollTopBtn) return;
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 500) {
+                scrollTopBtn.classList.add('visible');
+            } else {
+                scrollTopBtn.classList.remove('visible');
+            }
+        });
+        
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+    
+    // ================ SMOOTH SCROLLING ================
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            
+            if (href === '#' || href === '#!') return;
+            
+            const targetElement = document.querySelector(href);
+            if (targetElement) {
+                e.preventDefault();
+                
+                const headerHeight = document.getElementById('main-header').offsetHeight;
+                const targetPosition = targetElement.offsetTop - headerHeight;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+                
+                history.pushState(null, null, href);
+            }
+        });
+    });
+    
+    // ================ ANIMATE ELEMENTS ON LOAD ================
+    function animateElements() {
+        const cards = document.querySelectorAll('.card:not(.reveal), .capability-card:not(.reveal), .contact-item:not(.reveal)');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('visible');
+            }, index * 80);
+        });
+        
+        const formGroups = document.querySelectorAll('.form-group:not(.reveal)');
+        formGroups.forEach((group, index) => {
+            setTimeout(() => {
+                group.classList.add('visible');
+            }, index * 120);
+        });
+        
+        const processSteps = document.querySelectorAll('.process-step:not(.reveal)');
+        processSteps.forEach((step, index) => {
+            setTimeout(() => {
+                step.classList.add('visible');
+            }, index * 150);
+        });
+    }
+    
+    // ================ TOUCH OPTIMIZATIONS ================
+    function setupTouchOptimizations() {
+        if (!('ontouchstart' in window)) return;
+        
+        const touchElements = document.querySelectorAll('.btn, .card, .project-card, .contact-item, .capability-card');
+        
+        touchElements.forEach(element => {
+            element.style.cursor = 'pointer';
+            
+            element.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+                this.style.transition = 'transform 0.1s ease';
+            });
+            
+            element.addEventListener('touchend', function() {
+                this.style.transform = '';
+            });
+            
+            element.addEventListener('touchcancel', function() {
+                this.style.transform = '';
+            });
+        });
+        
+        const navLinks = document.querySelectorAll('.nav-links a');
+        navLinks.forEach(link => {
+            link.addEventListener('touchstart', function() {
+                this.style.backgroundColor = 'var(--green-dim)';
+            });
+            
+            link.addEventListener('touchend', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+    }
+    
+    // ================ INPUT OPTIMIZATIONS ================
+    function setupInputOptimizations() {
+        const inputs = document.querySelectorAll('input, textarea, select');
+        
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                if (window.innerWidth <= 768) {
+                    setTimeout(() => {
+                        this.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                            inline: 'nearest'
+                        });
+                    }, 300);
+                }
+            });
+            
+            input.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.add('has-value');
+                } else {
+                    this.classList.remove('has-value');
+                }
+            });
+        });
+    }
+    
+    // ================ DEVICE DETECTION ================
+    function detectDeviceType() {
+        const isMobile = window.innerWidth <= 768;
+        const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
+        
+        if (isMobile) {
+            document.body.classList.add('is-mobile');
+            optimizeForMobile();
+        } else if (isTablet) {
+            document.body.classList.add('is-tablet');
+        } else {
+            document.body.classList.add('is-desktop');
+        }
+    }
+    
+    function optimizeForMobile() {
+        const codeBg = document.getElementById('code-bg');
+        if (codeBg) {
+            const currentLines = codeBg.textContent.split('\n');
+            if (currentLines.length > 60) {
+                codeBg.textContent = currentLines.slice(0, 60).join('\n');
+            }
+        }
+        
+        document.documentElement.style.setProperty('--transition', 'all 0.2s ease');
+    }
+    
+    // ================ RESIZE HANDLER ================
+    function setupResizeHandler() {
+        let resizeTimer;
+        
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            
+            resizeTimer = setTimeout(() => {
+                detectDeviceType();
+                initCodeBackground();
+            }, 250);
+        });
+    }
+    
+    // ================ ERROR HANDLING ================
+    function showError(message, isCritical = false) {
+        console.error('Site Error:', message);
+        
+        if (isCritical) {
+            const errorContainer = document.createElement('div');
+            errorContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: rgba(255, 0, 68, 0.9);
+                color: white;
+                padding: 15px;
+                text-align: center;
+                z-index: 9999;
+                backdrop-filter: blur(10px);
+            `;
+            errorContainer.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <span style="margin: 0 10px;">${message}</span>
+                <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            document.body.appendChild(errorContainer);
+            
+            setTimeout(() => {
+                if (errorContainer.parentNode) {
+                    errorContainer.remove();
+                }
+            }, 10000);
+        }
+    }
+    
+    // ================ PERFORMANCE OPTIMIZATIONS ================
+    window.addEventListener('load', function() {
+        const loadingElements = document.querySelectorAll('.loading');
+        loadingElements.forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        const images = document.querySelectorAll('img[data-src]');
+        images.forEach(img => {
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+        });
+    });
+    
+    // Global error handling
+    window.addEventListener('error', function(e) {
+        showError(`حدث خطأ غير متوقع: ${e.message}`);
+    });
+    
+    window.addEventListener('unhandledrejection', function(e) {
+        showError(`حدث خطأ في الوعد: ${e.reason.message || e.reason}`);
+    });
+    
+    </script>
+</body>
+</html>
