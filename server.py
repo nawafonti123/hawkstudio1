@@ -1327,6 +1327,7 @@ def handle_exception(e):
 # ============================================================================
 
 if __name__ == '__main__':
+    port = int(os.getenv("PORT", 5000))
     print("=" * 60)
     print("🚀 HawkStudio Server - Production Ready")
     print("=" * 60)
@@ -1380,9 +1381,9 @@ if __name__ == '__main__':
     
     # تشغيل التطبيق
     app.run(
-        debug=os.getenv("RENDER") != "true",  # تفعيل debug فقط في البيئة المحلية
-        port=5000, 
-        host='0.0.0.0',
+        debug=os.getenv("RENDER") != "true",  # Debug محلي فقط
+        host="0.0.0.0",
+        port=port,
         threaded=True,
         use_reloader=False
     )
